@@ -20,9 +20,6 @@ OTHER_PREFIX_REGEX = re.compile(
 CODING_REGEX = re.compile(u'# ?-\*- coding: ?utf-8 -\*-')
 DOCSTRING_REGEX = re.compile(r'"""')
 
-# To count of all found strings
-total = 0
-
 # The parser discards b'' and r'' prefixes, so add something to the string
 # that's almost certainly not going to appear normally
 parsing_docstring = False
@@ -52,7 +49,6 @@ def _process(line):
     return line
 
 def _check_file(f):
-    i = 0
     # all WB files are in UTF-8
     with codecs.open(f, u'r', u'utf8') as ins:
         lines = [_process(l) for l in ins.read().splitlines()]
@@ -79,11 +75,9 @@ def _check_file(f):
         for msg in msgs:
             print(u'Unprefixed string on line %u, character %u: %s' % (
                 lineno, col_offset, msg))
-    global total
     found = sum(len(m) for m in unprefixed.itervalues())
-    total += found
-    print(u'==> Found %u unprefixed strings.' % found)
-    print()
+    print(u'==> Found %u unprefixed strings.\n' % found)
+    return found
 
 if __name__ == u'__main__':
     if len(sys.argv) < 2:
@@ -103,8 +97,19 @@ if __name__ == u'__main__':
     else:
         raise RuntimeError(u"'%s' does not exist." % file_arg)
     print()
+    # To count of all found strings
+    total = 0
+    files_with_unprefixed = {}
     for f in sorted(target_files):
         print(u"==> Checking file '%s'" % f)
-        _check_file(f)
+        found = _check_file(f)
+        if found:
+            total += found
+            files_with_unprefixed[f] = found
     print(u'==> Total unprefixed strings found: %u' % total)
+    print()
+    print(u'==> Unprefixed strings per file:\n')
+    for t in sorted(files_with_unprefixed.items(), key=lambda v: v[1],
+                    reverse=True):
+        print(u'%s: %s' % t)
     print()
