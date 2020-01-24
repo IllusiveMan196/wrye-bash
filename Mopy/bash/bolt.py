@@ -1340,6 +1340,7 @@ class PickleDict(object):
                         self.pickled_data.update(pickle.load(ins))
                     else:
                         raise PickleDict.Mold(path)
+                    self._fixme_drop_compat_for_unicode()
                 return 1 + (path == self.backup)
             except (OSError, IOError, EOFError, ValueError,
                     pickle.UnpicklingError): #PY3:FileNotFound
@@ -1363,6 +1364,21 @@ class PickleDict(object):
                 pickle.dump(pkl, out, -1)
         self._pkl_path.untemp(doBackup=True)
         return True
+
+    def _fixme_drop_compat_for_unicode(self):
+        """Automatically called while loading, converts string keys to
+        unicode and saves if any were changed."""
+        # FIXME Drop in 308!
+        def _conv(k): return unicode(k, u'utf8') if type(k) == str else k
+        converted = False
+        if any(type(k) == str for k in self.pickled_data.iterkeys()):
+            converted = True
+            self.pickled_data = {_conv(k): v for k, v in self.pickled_data.iteritems()}
+        if any(type(k) == str for k in self.vdata.iterkeys()):
+            converted = True
+            self.vdata = {_conv(k): v for k, v in self.vdata.iteritems()}
+        if converted:
+            self.save()
 
 #------------------------------------------------------------------------------
 class Settings(DataDict):
