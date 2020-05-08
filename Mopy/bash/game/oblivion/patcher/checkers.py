@@ -94,7 +94,7 @@ class CoblCatalogsPatcher(Patcher, ExSpecial):
         actorNames = bush.game.actor_values
         keep = self.patchFile.getKeeper()
         #--Book generator
-        def getBook(objectId,eid,full,value,iconPath,modelPath,modb_p):
+        def getBook(objectId, eid, full, value, iconPath, modelPath):
             book = MreRecord.type_class[b'BOOK'](RecHeader(b'BOOK', 0, 0, 0, 0))
             book.longFids = True
             book.changed = True
@@ -105,9 +105,9 @@ class CoblCatalogsPatcher(Patcher, ExSpecial):
             book.book_text = u'<div align="left"><font face=3 color=4444>'
             book.book_text += (_(u"Salan's Catalog of %s") + u'\r\n\r\n') % full
             book.iconPath = iconPath
-            book.model = book.getDefault(u'model')
+            book.model = book.get_mel_object_for_group(u'model')
             book.model.modPath = modelPath
-            book.model.modb_p = modb_p
+            book.model.modb_p = 12.01513957977295
             book.modb = book
             ##: In Cobl Main.esm, the books have a script attached
             # (<cobGenDevalueOS [SCPT:01001DDD]>). This currently gets rid of
@@ -119,12 +119,11 @@ class CoblCatalogsPatcher(Patcher, ExSpecial):
             return book
         #--Ingredients Catalog
         id_ingred = self.id_ingred
-        iconPath, modPath, modb_p = (u'Clutter\\IconBook9.dds',
-                                     u'Clutter\\Books\\Octavo02.NIF',
-                                     b'\x03>@A')
+        iconPath, modPath = (u'Clutter\\IconBook9.dds',
+                             u'Clutter\\Books\\Octavo02.NIF')
         for (num,objectId,full,value) in _ingred_alchem:
             book = getBook(objectId, u'cobCatAlchemIngreds%s' % num, full,
-                           value, iconPath, modPath, modb_p)
+                           value, iconPath, modPath)
             buff = io.StringIO(book.book_text)
             buff.seek(0, os.SEEK_END)
             buffWrite = buff.write
@@ -146,12 +145,11 @@ class CoblCatalogsPatcher(Patcher, ExSpecial):
                 if mgef in actorEffects: effectName += actorNames[actorValue]
                 effect_ingred[effectName].append((index,full))
         #--Effect catalogs
-        iconPath, modPath, modb_p = (u'Clutter\\IconBook7.dds',
-                                     u'Clutter\\Books\\Octavo01.NIF',
-                                     b'\x03>@A')
+        iconPath, modPath = (u'Clutter\\IconBook7.dds',
+                             u'Clutter\\Books\\Octavo01.NIF')
         for (num, objectId, full, value) in _effect_alchem:
             book = getBook(objectId, u'cobCatAlchemEffects%s' % num, full,
-                           value, iconPath, modPath, modb_p)
+                           value, iconPath, modPath)
             buff = io.StringIO(book.book_text)
             buff.seek(0, os.SEEK_END)
             buffWrite = buff.write
@@ -225,7 +223,7 @@ class SEWorldTestsPatcher(ExSpecial, ModLoader):
             for condition in record.conditions:
                 if condition.ifunc == 365: break #--365: playerInSeWorld
             else:
-                condition = record.getDefault(u'conditions')
+                condition = record.get_mel_object_for_group(u'conditions')
                 condition.ifunc = 365
                 # Set parameters etc. needed for this function (no parameters
                 # and a float comparison value)

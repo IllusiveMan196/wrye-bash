@@ -147,11 +147,13 @@ class MelSet(object):
     def __init__(self,*elements):
         # Filter out None, produced by static deciders like fnv_only
         self.elements = [e for e in elements if e is not None]
-        self.defaulters = {}
+        self.defaulters = {} # map record attributes to default
+        self.listers = set() # collect list record attributes
         self.loaders = {}
         self.formElements = set()
+        self.mel_providers_dict = {}
         for element in self.elements:
-            element.getDefaulters(self.defaulters,'')
+            element.getDefaulters(self)
             element.getLoaders(self.loaders)
             element.hasFids(self.formElements)
         for sig_candidate in self.loaders:
@@ -185,11 +187,6 @@ class MelSet(object):
                     u'sure to choose unique attribute names!' % (
                         curr_rec_sig, repr(duplicate_slots)))
             all_slots.update(element_slots)
-
-    def getDefault(self,attr):
-        """Returns default instance of specified instance. Only useful for
-        MelGroup and MelGroups."""
-        return self.defaulters[attr].getDefault()
 
     def dumpData(self,record, out):
         """Dumps state into out. Called by getSize()."""
@@ -250,6 +247,7 @@ class MelSet(object):
         distributor = _MelDistributor(distributor_config.copy())
         self.elements += (distributor,)
         distributor.getLoaders(self.loaders)
+        distributor.getDefaulters(self)
         distributor.set_mel_set(self)
         return self
 
@@ -575,8 +573,6 @@ class MelRecord(MreRecord):
         if self.__class__.rec_sig != header.recType:
             raise ValueError(u'Initialize %s with header.recType %s' % (
                 type(self), header.recType))
-        for element in self.__class__.melSet.elements:
-            element.setDefault(self)
         MreRecord.__init__(self, header, ins, do_unpack)
 
     @classmethod
@@ -586,10 +582,10 @@ class MelRecord(MreRecord):
             cls.melSet.check_duplicate_attrs(cls.rec_sig)
 
     @classmethod
-    def getDefault(cls, attr):
+    def get_mel_object_for_group(cls, attr):
         """Returns default instance of specified instance. Only useful for
         MelGroup and MelGroups."""
-        return cls.melSet.getDefault(attr)
+        return cls.melSet.mel_providers_dict[attr]()
 
     def loadData(self, ins, endPos):
         """Loads data from input stream. Called by load()."""
@@ -636,3 +632,15 @@ class MelRecord(MreRecord):
     def updateMasters(self, masterset_add):
         """Updates set of master names according to masters actually used."""
         self.__class__.melSet.updateMasters(self, masterset_add)
+
+    def __getattr__(self, missing_attr):
+        if missing_attr in self.__class__.melSet.defaulters:
+            target = self.__class__.melSet.defaulters[missing_attr]
+        elif missing_attr in self.__class__.melSet.listers:
+            target = []
+        elif missing_attr in self.__class__.melSet.mel_providers_dict:
+            target = self.__class__.melSet.mel_providers_dict[missing_attr]()
+        else:
+            raise AttributeError(missing_attr)
+        setattr(self, missing_attr, target)
+        return target

@@ -39,8 +39,7 @@ from .balt import Progress
 from .bass import dirs, inisettings
 from .bolt import GPath, decoder, deprint, setattr_deep, attrgetter_cache, \
     str_or_none, int_or_none, structs_cache, int_or_zero
-from .brec import MreRecord, MelObject, genFid, RecHeader, null4, \
-    attr_csv_struct
+from .brec import MreRecord, genFid, RecHeader, null4, attr_csv_struct
 from .exception import AbstractError
 from .mod_files import ModFile, LoadFactory
 
@@ -451,7 +450,7 @@ class ActorFactions(_AParser):
                     break
             else:
                 # This is an addition, we need to create a new faction instance
-                target_entry = MelObject()
+                target_entry = record.get_mel_object_for_group(u'factions')
                 record.factions.append(target_entry)
             # Actually write out the attributes from new_info
             target_entry.faction = faction
@@ -465,7 +464,7 @@ class ActorFactions(_AParser):
         rank = int(rank)
         top_grup_sig = top_grup.encode(u'ascii')
         if self._called_from_patcher:
-            ret_obj = MreRecord.type_class[top_grup_sig].getDefault(u'factions')
+            ret_obj = MreRecord.type_class[top_grup_sig].get_mel_object_for_group(u'factions')
             ret_obj.faction = lfid
             ret_obj.rank = rank
             self.id_stored_data[top_grup_sig][aid][u'factions'].append(ret_obj)
@@ -723,7 +722,7 @@ class FactionRelations(_AParser):
                     break
             else:
                 # It's an addition, we need to make a new relation object
-                target_entry = MelObject()
+                target_entry = record.get_mel_object_for_group(u'relations')
                 record.relations.append(target_entry)
             # Actually write out the attributes from new_info
             for rel_attr, rel_val in zip(self.cls_rel_attrs,
@@ -1141,7 +1140,7 @@ class _UsesEffectsMixin(_HandleAliases):
             if None in (eff_name,magnitude,area,duration,range_,actorvalue):
                 continue
             rec_type = MreRecord.type_class[self._parser_sigs[0]]
-            eff = rec_type.getDefault(u'effects')
+            eff = rec_type.get_mel_object_for_group(u'effects')
             effects.append(eff)
             eff.effect_sig = eff_name.encode(u'ascii')
             eff.magnitude = magnitude
@@ -1161,7 +1160,7 @@ class _UsesEffectsMixin(_HandleAliases):
             sename = str_or_none(sename)
             if any(x is None for x in (seschool, seflags, sename)):
                 continue
-            eff.scriptEffect = se = rec_type.getDefault(
+            eff.scriptEffect = se = rec_type.get_mel_object_for_group(
                 u'effects.scriptEffect')
             se.full = sename
             se.script_fid = self._coerce_fid(semod, seobj)

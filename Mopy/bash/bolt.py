@@ -2143,7 +2143,7 @@ class _RP_LeafSubpath(_ARP_Subpath):
         return [getattr(record, self._subpath_attr)]
 
     def rp_exists(self, record):
-        return hasattr(record, self._subpath_attr)
+        return getattr(record, self._subpath_attr, None) is not None
 
     def rp_map(self, record, func):
         s_attr = self._subpath_attr
@@ -2166,13 +2166,11 @@ class _RP_IteratedSubpath(_ARP_Subpath):
                                    in getattr(record, self._subpath_attr))
 
     def rp_exists(self, record):
-        num_iterated = 0
         next_exists = self._next_subpath.rp_exists
         for iter_attr in getattr(record, self._subpath_attr):
-            if not next_exists(iter_attr):
-                return False # short-circuit
-            num_iterated += 1
-        return num_iterated > 0 # faster than bool()
+            if next_exists(iter_attr):
+                return True # short-circuit
+        return False
 
     def rp_map(self, record, func):
         map_next = self._next_subpath.rp_map

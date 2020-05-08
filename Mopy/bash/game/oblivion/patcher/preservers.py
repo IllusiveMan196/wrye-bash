@@ -181,10 +181,10 @@ class CoblExhaustionPatcher(_ExSpecialList):
             #--Okay, do it
             record.full = u'+' + record.full
             record.spellType = 3 #--Lesser power
-            effect = record.getDefault(u'effects')
+            effect = record.get_mel_object_for_group(u'effects')
             effect.effect_sig = b'SEFF'
             effect.duration = duration
-            scriptEffect = record.getDefault(u'effects.scriptEffect')
+            scriptEffect = record.get_mel_object_for_group(u'effects.scriptEffect')
             scriptEffect.full = u'Power Exhaustion'
             scriptEffect.script_fid = exhaustId
             scriptEffect.school = 2
@@ -271,14 +271,14 @@ class MorphFactionsPatcher(_ExSpecialList):
             if not any(mFactLong == relation.faction for relation in
                        record.relations):
                 record.general_flags.hidden_from_pc = False
-                relation = record.getDefault(u'relations')
+                relation = record.get_mel_object_for_group(u'relations')
                 relation.faction = mFactLong
                 relation.mod = 10
                 record.relations.append(relation)
                 mname,rankName = id_info[rec_fid]
                 record.full = mname
                 if not record.ranks:
-                    record.ranks = [record.getDefault(u'ranks')]
+                    record.ranks = [record.get_mel_object_for_group(u'ranks')]
                 for rank in record.ranks:
                     if not rank.male_title: rank.male_title = rankName
                     if not rank.female_title: rank.female_title = rankName
@@ -295,7 +295,7 @@ class MorphFactionsPatcher(_ExSpecialList):
             relations = record.relations
             del relations[:]
             for faction in mFactable:
-                relation = record.getDefault(u'relations')
+                relation = record.get_mel_object_for_group(u'relations')
                 relation.faction = faction
                 relation.mod = 10
                 relations.append(relation)

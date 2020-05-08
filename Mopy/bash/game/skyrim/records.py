@@ -46,14 +46,15 @@ from ...brec import MelRecord, MelObject, MelGroups, MelStruct, FID, \
     MelUInt32Flags, MelOwnership, MelDebrData, get_structs, MelWeatherTypes, \
     MelActorSounds, MelFactionRanks, MelSorted, vmad_properties_key, \
     vmad_qust_fragments_key, vmad_fragments_key, vmad_script_key, \
-    vmad_qust_aliases_key, MelReflectedRefractedBy, perk_effect_key
+    vmad_qust_aliases_key, MelReflectedRefractedBy, perk_effect_key, \
+    MelModelCompare
 from ...exception import ModError, ModSizeError, StateError
 
 # Set MelModel in brec but only if unset, otherwise we are being imported from
 # fallout4.records
 if brec.MelModel is None:
 
-    class _MelModel(MelGroup):
+    class _MelModel(MelModelCompare):
         """Represents a model record."""
         # MODB and MODD are no longer used by TES5Edit
         typeSets = {
@@ -469,11 +470,6 @@ class _AVmadComponent(object):
         try:
             return self._component_class()
         except AttributeError:
-            # TODO(inf) This seems to work - what we're currently doing in
-            #  records code, namely reassigning __slots__, does *nothing*:
-            #  https://stackoverflow.com/questions/27907373/dynamically-change-slots-in-python-3
-            #  Fix that by refactoring class creation like this for
-            #  MelBase/MelSet etc.!
             class _MelComponentInstance(MelObject):
                 __slots__ = self.used_slots
             self._component_class = _MelComponentInstance # create only once
@@ -4072,7 +4068,7 @@ class MreQust(MelRecord):
         MelSorted(MelGroups('stages',
             MelStruct(b'INDX', [u'H', u'2B'],'index',(_stageFlags, u'flags'),'unknown'),
             MelGroups('logEntries',
-                MelUInt8Flags(b'QSDT', u'stageFlags', stageEntryFlags),
+                MelUInt8Flags(b'QSDT', u'stageFlags', stageEntryFlags, required=True),
                 MelConditions(),
                 MelLString(b'CNAM','log_text'),
                 MelFid(b'NAM0', 'nextQuest'),
