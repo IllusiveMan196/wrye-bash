@@ -35,7 +35,7 @@ from .basic_elements import SubrecordBlob, unpackSubHeader
 from .mod_io import ModReader
 from .utils_constants import strFid, _int_unpacker
 from .. import bolt, exception
-from ..bolt import decoder, struct_pack
+from ..bolt import ChardetStr, struct_pack
 from ..bolt import float_or_none, int_or_zero, str_or_none
 
 def _str_to_bool(value, __falsy=frozenset(
@@ -537,15 +537,14 @@ class MreRecord(object):
         record."""
         # Common subtype expanded in self?
         attr = MreRecord.subtype_attr.get(mel_sig_)
-        value = None # default
         # If not MreRecord, then we will have info in data.
         if self.__class__ != MreRecord:
-            if attr not in self.__slots__: return value
+            if attr not in self.__slots__: return None # default
             return getattr(self, attr)
         for subrec in self.iterate_subrecords(mel_sigs={mel_sig_}):
-            value = bolt.cstrip(subrec.mel_data)
-            break
-        return decoder(value)
+            # will decode it using chardet detection
+            return u'%s' % ChardetStr(subrec.mel_data)
+        else: return None
 
     # Classmethods ------------------------------------------------------------
     @classmethod

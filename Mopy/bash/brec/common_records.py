@@ -39,7 +39,7 @@ from .record_structs import MelRecord, MelSet
 from .utils_constants import FID
 from .. import bolt, exception
 from ..bolt import decoder, GPath, struct_pack, structs_cache, \
-    remove_newlines, to_unix_newlines
+    remove_newlines, to_unix_newlines, ChardetStr
 from ..exception import StateError
 
 #------------------------------------------------------------------------------
@@ -85,8 +85,9 @@ class MreHeaderBase(MelRecord):
                     num_masters - num_sizes)
             for master_name, master_size in zip(record.masters,
                                                  record.master_sizes):
-                MelUnicode(b'MAST', '', encoding=u'cp1252').packSub(
-                    out, master_name.s)
+                MelUnicode(b'MAST', '').packSub(out, ChardetStr(
+                    master_name.s.encode(u'cp1252')),
+                    force_encoding=u'cp1252')
                 MelBase(b'DATA', '').packSub(
                     out, struct_pack(u'Q', master_size))
 
