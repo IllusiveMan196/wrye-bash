@@ -225,11 +225,6 @@ def to_unix_newlines(s): # type: (unicode) -> unicode
     Handles both CR-LF (Windows) and pure CR (macOS)."""
     return s.replace(u'\r\n', u'\n').replace(u'\r', u'\n')
 
-def remove_newlines(s): # type: (unicode) -> unicode
-    """Removes all newlines (whether they are in LF, CR-LF or CR form) from the
-    specified string."""
-    return to_unix_newlines(s).replace(u'\n', u'')
-
 def conv_obj(o, conv_enc=u'utf-8', __list_types=frozenset((list, set, tuple))):
     """Converts an object containing bytestrings to an equivalent object that
     contains decoded versions of those bytestrings instead. Decoding is done
@@ -330,6 +325,8 @@ class PluginStr(bytes):
     _preferred_encoding = None
     # Nonempty __slots__ does not work for classes derived from
     # "variable-length" built-in types such as long, str and tuple.
+    _avoid_encodings = {u'utf8', u'utf-8'}
+    _ci_comparison = True
 
     @property
     def preferred_encoding(self):
@@ -342,12 +339,19 @@ class PluginStr(bytes):
         try:
             return self._decoded_str
         except AttributeError:
-            # it may happen to have more that one null terminator
-            byte_str = self.rstrip(b'\x00')
-            self._decoded_str, self._preferred_encoding = decoder(byte_str,
-                self.preferred_encoding, avoidEncodings=self._avoid_encodings,
-                returnEncoding=True)
+            self._decode()
             return self._decoded_str
+
+    def _decode(self):
+        # it may happen to have more that one null terminator
+        byte_str = self.rstrip(b'\x00')
+        self._decoded_str, self._preferred_encoding = decoder(byte_str,
+            self.preferred_encoding, avoidEncodings=self._avoid_encodings,
+            returnEncoding=True)
+
+    @property
+    def _cmp_key(self):
+        return self._decoded.lower() if self._ci_comparison else self._decoded
 
     def reencode(self, target_encoding, maxSize=None, minSize=0):
         """Decode then reencode the bytes if our preferred_encoding does not
@@ -364,44 +368,48 @@ class PluginStr(bytes):
         return encode_complex_string(to_encode, maxSize, minSize,
             target_encoding)
 
+    @classmethod
+    def from_basestring(cls, str_or_bytes):
+        return cls(encode(str_or_bytes, firstEncoding=cls.preferred_encoding or pluginEncoding))
+
     #--Hash/Compare
     def __hash__(self):
-        return hash(self._decoded.lower())
+        return hash(self._cmp_key)
     def __eq__(self, other):
         if isinstance(other, PluginStr):
-            return self._decoded.lower() == other._decoded.lower()
+            return self._cmp_key == other._cmp_key
         if isinstance(other, str):
-            return self._decoded.lower() == other.lower()
+            return self._cmp_key == (other.lower() if self._ci_comparison else other)
         return NotImplemented
     def __ne__(self, other):
         if isinstance(other, PluginStr):
-            return self._decoded.lower() != other._decoded.lower()
+            return self._cmp_key != other._cmp_key
         if isinstance(other, str):
-            return self._decoded.lower() != other.lower()
+            return self._cmp_key != (other.lower() if self._ci_comparison else other)
         return NotImplemented
     def __lt__(self, other):
         if isinstance(other, PluginStr):
-            return self._decoded.lower() < other._decoded.lower()
+            return self._cmp_key < other._cmp_key
         if isinstance(other, str):
-            return self._decoded.lower() != other.lower()
+            return self._cmp_key != (other.lower() if self._ci_comparison else other)
         return NotImplemented
     def __ge__(self, other):
         if isinstance(other, PluginStr):
-            return self._decoded.lower() >= other._decoded.lower()
+            return self._cmp_key >= other._cmp_key
         if isinstance(other, str):
-            return self._decoded.lower() != other.lower()
+            return self._cmp_key != (other.lower() if self._ci_comparison else other)
         return NotImplemented
     def __gt__(self, other):
         if isinstance(other, PluginStr):
-            return self._decoded.lower() > other._decoded.lower()
+            return self._cmp_key > other._cmp_key
         if isinstance(other, str):
-            return self._decoded.lower() != other.lower()
+            return self._cmp_key != (other.lower() if self._ci_comparison else other)
         return NotImplemented
     def __le__(self, other):
         if isinstance(other, PluginStr):
-            return self._decoded.lower() <= other._decoded.lower()
+            return self._cmp_key <= other._cmp_key
         if isinstance(other, str):
-            return self._decoded.lower() != other.lower()
+            return self._cmp_key != (other.lower() if self._ci_comparison else other)
         return NotImplemented
     #--repr
     def __repr__(self):
@@ -415,6 +423,21 @@ class ChardetStr(PluginStr):
     @property
     def preferred_encoding(self):
         return self._preferred_encoding # None == automatic detection
+
+    @classmethod
+    def from_basestring(cls, str_or_bytes):  # automatic detection
+        return cls(encode(str_or_bytes, firstEncoding=None))
+
+class StripNewlines(PluginStr):
+    """Removes all newlines (whether they are in LF, CR-LF or CR form) from
+    the decoded string."""
+
+    def _decode(self):
+        # in addition to super remove all newlines
+        super(StripNewlines, self)._decode()
+        # TODO would (r)strip suffice??
+        self._decoded_str = to_unix_newlines(self._decoded_str).replace(u'\n',
+                                                                        u'')
 
 class LowerDict(dict):
     """Dictionary that transforms its keys to CIstr instances.

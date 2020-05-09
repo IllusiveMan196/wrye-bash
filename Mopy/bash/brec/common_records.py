@@ -28,21 +28,35 @@ some commonly needed records."""
 
 from operator import attrgetter
 
-from .mod_io import RecHeader
 from .advanced_elements import FidNotNullDecider, AttrValDecider, MelArray, \
     MelUnion, MelSorted
-from .basic_elements import MelBase, MelFid, MelFloat, MelGroups, \
-    MelLString, MelNull, MelStruct, MelUInt32, MelSInt32, MelFixedString, \
-    MelUnicode, MelGroup, AttrsCompare
+from .basic_elements import MelBase, MelFid, MelFloat, MelGroups, MelLString, \
+    MelNull, MelStruct, MelUInt32, MelSInt32, MelFixedString, MelUnicode, \
+    MelGroup, AttrsCompare, MelString
 from .common_subrecords import MelEdid
 from .record_structs import MelRecord, MelSet
 from .utils_constants import FID
 from .. import bolt, exception
 from ..bolt import decoder, GPath, struct_pack, structs_cache, \
-    remove_newlines, to_unix_newlines, ChardetStr
+    to_unix_newlines, ChardetStr, encode, StripNewlines
 from ..exception import StateError
 
 #------------------------------------------------------------------------------
+class _CaseSensitiveStr(ChardetStr):
+    _ci_comparison = False
+
+    def _decode(self):
+        # in addition to super remove convert all newlines - description only
+        super(_CaseSensitiveStr, self)._decode()
+        self._decoded_str = to_unix_newlines(self._decoded_str)
+
+class _AuthorStr(StripNewlines, _CaseSensitiveStr): pass
+
+class _MelChardet(MelString):
+    """Falls back to chardet to decode the string and compares case
+    sensitive. **Only** use for MelAuth and MelDesc."""
+    _wrapper_bytes_type = _CaseSensitiveStr
+
 class MreHeaderBase(MelRecord):
     """File header.  Base class for all 'TES4' like records"""
     class MelMasterNames(MelBase):
@@ -91,28 +105,32 @@ class MreHeaderBase(MelRecord):
                 MelBase(b'DATA', '').packSub(
                     out, struct_pack(u'Q', master_size))
 
-    class MelAuthor(MelUnicode):
+    class MelAuthor(_MelChardet):
+        _wrapper_bytes_type = _AuthorStr
         def __init__(self):
             super(MreHeaderBase.MelAuthor, self).__init__(b'CNAM',
-                u'author_pstr', u'', 511)
+                u'author_pstr', _AuthorStr(b''), 511)
 
-    class MelDescription(MelUnicode):
+    class MelDescription(_MelChardet):
         def __init__(self):
             super(MreHeaderBase.MelDescription, self).__init__(b'SNAM',
-                u'description_pstr', u'', 511)
+                u'description_pstr', _CaseSensitiveStr(b''), 511)
 
     @property
     def description(self):
-        return to_unix_newlines(self.description_pstr or u'')
+        return self.description_pstr._decoded
     @description.setter
     def description(self, new_desc):
-        self.description_pstr = new_desc
+        if isinstance(new_desc, unicode):
+            new_desc = encode(new_desc)
+        self.description_pstr = _CaseSensitiveStr.from_basestring(new_desc)
+
     @property
     def author(self):
-        return remove_newlines(self.author_pstr or u'')
+        return self.author_pstr._decoded
     @author.setter
     def author(self, new_author):
-        self.author_pstr = new_author
+        self.author_pstr = _AuthorStr.from_basestring(new_author)
 
     def loadData(self, ins, endPos):
         super(MreHeaderBase, self).loadData(ins, endPos)

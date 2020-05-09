@@ -142,7 +142,7 @@ class PatchFile(ModFile):
     def __init__(self, modInfo, p_file_minfos):
         """Initialization."""
         ModFile.__init__(self,modInfo,None)
-        self.tes4.author = u'BASHED PATCH'
+        self.tes4.author = b'BASHED PATCH'
         self.tes4.masters = [p_file_minfos.masterName]
         self.longFids = True
         self.keepIds = set()
@@ -308,6 +308,6 @@ class PatchFile(ModFile):
         if (bush.game.has_esl and bass.settings[u'bash.mods.auto_flag_esl'] and
                 self.tes4.nextObject <= 0xFFF):
             self.tes4.flags1.eslFile = True
-            self.tes4.description += u'\n' + _(
+            self.tes4.description = u'\n'.join([self.tes4.description, _(
                 u'This patch has been automatically ESL-flagged to save a '
-                u'load order slot.')
+                u'load order slot.')])
