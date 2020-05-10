@@ -180,8 +180,8 @@ def encode(text_str, encodings=encodingOrder, firstEncoding=None,
         else: return goodEncoding[0]
     raise UnicodeEncodeError(u'Text could not be encoded using any of the following encodings: %s' % encodings)
 
-def encode_complex_string(string_val, max_size=None, min_size=None,
-                          preferred_encoding=None):
+def _encode_complex_string(string_val, max_size=None, min_size=None,
+                           preferred_encoding=None):
     """Handles encoding of a string that must satisfy certain conditions. Any
     of the keyword arguments may be omitted, in which case they will simply not
     apply.
@@ -365,7 +365,7 @@ class PluginStr(bytes):
                 return self
             to_encode = self # hopefully will not try to encode it
         else: to_encode = self._decoded
-        return encode_complex_string(to_encode, maxSize, minSize,
+        return _encode_complex_string(to_encode, maxSize, minSize,
             target_encoding)
 
     @classmethod

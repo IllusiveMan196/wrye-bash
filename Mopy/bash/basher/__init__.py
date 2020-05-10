@@ -2049,14 +2049,10 @@ class SaveList(balt.UIList):
         u'Size'    : lambda self, a: self.data_store[a].fsize,
         u'PlayTime': lambda self, a: self.data_store[a].header.gameTicks,
         u'Player'  : lambda self, a: self.data_store[a].header.pcName,
-        u'Cell'    : lambda self, a: self.data_store[a].header.pcLocation,
+        u'Cell'    : lambda self, a: u'%s' % self.data_store[a].header.pcLocation,
         u'Status'  : lambda self, a: self.data_store[a].getStatus(),
     }
     #--Labels, why checking for header here - is this called on corrupt saves ?
-    @staticmethod
-    def _headInfo(saveInfo, attr):
-        if not saveInfo.header: return u'-'
-        return getattr(saveInfo.header, attr)
     @staticmethod
     def _playTime(saveInfo):
         if not saveInfo.header: return u'-'
@@ -2067,10 +2063,10 @@ class SaveList(balt.UIList):
         (u'Modified', lambda self, p: format_date(self.data_store[p].mtime)),
         (u'Size',     lambda self, p: round_size(self.data_store[p].fsize)),
         (u'PlayTime', lambda self, p: self._playTime(self.data_store[p])),
-        (u'Player',   lambda self, p: self._headInfo(self.data_store[p],
-                                                     u'pcName')),
-        (u'Cell',     lambda self, p: self._headInfo(self.data_store[p],
-                                                     u'pcLocation')),
+        (u'Player',   lambda self, p: self.data_store[p].header and
+                        self.data_store[p].header.pcName or u'-'),
+        (u'Cell',     lambda self, p: self.data_store[p].header and
+                        u'%s' % self.data_store[p].header.pcLocation or u'-'),
     ])
 
     @balt.conversation
@@ -2202,7 +2198,6 @@ class SaveDetails(_ModsSavesDetails):
         self.saveInfo = None
         self.fileStr = u''
         self.playerNameStr = u''
-        self.curCellStr = u''
         self.playerLevel = 0
         self.gameDays = 0
         self.playMinutes = 0
@@ -2215,7 +2210,6 @@ class SaveDetails(_ModsSavesDetails):
             #--Remember values for edit checks
             self.fileStr = saveInfo.ci_key.s
             self.playerNameStr = saveInfo.header.pcName
-            self.curCellStr = saveInfo.header.pcLocation
             self.gameDays = saveInfo.header.gameDays
             self.playMinutes = saveInfo.header.gameTicks//60000
             self.playerLevel = saveInfo.header.pcLevel
@@ -2247,7 +2241,7 @@ class SaveDetails(_ModsSavesDetails):
             _(u'Level') + u' %d, ' + _(u'Day') + u' %d, ' +
             _(u'Play') + u' %d:%02d\n%s') % (
             self.playerLevel, int(self.gameDays), self.playMinutes // 60,
-            (self.playMinutes % 60), self.curCellStr)
+            (self.playMinutes % 60), u'%s' % self.saveInfo.header.pcLocation)
 
     def _update_masters_warning(self):
         """Show or hide the 'inaccurate masters' warning."""
