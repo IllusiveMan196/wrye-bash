@@ -31,7 +31,7 @@ from .advanced_elements import AttrValDecider, MelArray, MelTruncatedStruct, \
     MelUnion, PartialLoadDecider, FlagDecider, MelSorted
 from .basic_elements import MelBase, MelFid, MelGroup, MelGroups, MelLString, \
     MelNull, MelSequential, MelString, MelStruct, MelUInt32, MelOptStruct, \
-    MelFloat, MelReadOnly, MelFids, MelUInt32Flags, MelUInt8Flags, MelSInt32, \
+    MelFloat, MelReadOnly, MelUInt32Flags, MelUInt8Flags, MelSInt32, \
     MelStrings, MelUInt8
 from .utils_constants import _int_unpacker, FID, null1
 from ..bolt import Flags, encode, struct_pack, struct_unpack, unpack_byte, \
@@ -595,7 +595,7 @@ class MelMODS(MelBase):
         dataAppend = mods_data.append
         for x in range(count):
             string = insRead32(*debug_strs)
-            fid = ins.unpackRef()
+            fid = ins.unpack(__unpacker, 4)[0]
             index, = insUnpack(__unpacker, 4, *debug_strs)
             dataAppend((string,fid,index))
         setattr(record, self.attr, mods_data)
@@ -656,7 +656,7 @@ class MelRefScale(MelFloat):
 class MelSpells(MelSorted):
     """Handles the common SPLO subrecord."""
     def __init__(self):
-        super(MelSpells, self).__init__(MelFids(b'SPLO', u'spells'))
+        super(MelSpells, self).__init__(MelGroups(u'spells', MelFid(b'SPLO')))
 
 #------------------------------------------------------------------------------
 class MelWorldBounds(MelSequential):

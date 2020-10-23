@@ -30,7 +30,7 @@ from operator import attrgetter
 
 from .advanced_elements import FidNotNullDecider, AttrValDecider, MelArray, \
     MelUnion, MelSorted
-from .basic_elements import MelBase, MelFid, MelFids, MelFloat, MelGroups, \
+from .basic_elements import MelBase, MelFid, MelFloat, MelGroups, \
     MelLString, MelNull, MelStruct, MelUInt32, MelSInt32, MelFixedString, \
     MelUnicode, MelGroup, AttrsCompare
 from .common_subrecords import MelEdid
@@ -138,7 +138,7 @@ class MreFlst(MelRecord):
 
     melSet = MelSet(
         MelEdid(),
-        MelFids(b'LNAM', u'formIDInList'), # do *not* sort!
+        MelGroups(u'formIDInList', MelFid(b'LNAM')),  # do *not* sort!
     )
 
     __slots__ = melSet.getSlotsUsed() + [u'mergeOverLast', u'mergeSources',
