@@ -31,7 +31,7 @@ from ... import brec, bush
 from ...bolt import Flags, structs_cache
 from ...brec import MelRecord, MelGroups, MelStruct, FID, MelGroup, \
     MelString, MelSet, MelFid, MelOptStruct, MelFids, MreHeaderBase, \
-    MelBase, MelFidList, MreGmstBase, MelBodyParts, MelMODS, MelFactions, \
+    MelBase, MreGmstBase, MelBodyParts, MelMODS, MelFactions, \
     MelReferences, MelColorInterpolator, MelValueInterpolator, MelAnimations, \
     MelUnion, AttrValDecider, MelRegnEntrySubrecord, SizeDecider, MelFloat, \
     MelSInt8, MelSInt16, MelSInt32, MelUInt8, MelUInt16, MelUInt32, \
@@ -333,7 +333,7 @@ class MreTes4(MreHeaderBase):
         MreHeaderBase.MelAuthor(),
         MreHeaderBase.MelDescription(),
         MreHeaderBase.MelMasterNames(),
-        MelFidList(b'ONAM','overrides'),
+        MelArray(u'overrides', MelFid(b'ONAM')),
         MelBase(b'SCRN', 'screenshot'),
     )
     __slots__ = melSet.getSlotsUsed()
@@ -922,7 +922,7 @@ class MreCpth(MelRecord):
     melSet = MelSet(
         MelEdid(),
         MelConditions(),
-        MelFidList(b'ANAM','relatedCameraPaths',),
+        MelArray(u'relatedCameraPaths', MelFid(b'ANAM')),
         MelUInt8(b'DATA', 'cameraZoom'),
         MelFids(b'SNAM','cameraShots',),
     )
@@ -1429,7 +1429,7 @@ class MreIdlm(MelRecord):
             old_versions={'B'}),
             counter='animation_count', counts='animations'),
         MelFloat(b'IDLT', 'idleTimerSetting'),
-        MelFidList(b'IDLA','animations'),
+        MelArray(u'animations', MelFid(b'IDLA')),
     )
     __slots__ = melSet.getSlotsUsed()
 
@@ -1982,7 +1982,7 @@ class MreNavi(MelRecord):
             # so leaving this as MelBase for now
             MelBase(b'NVMI', 'nav_map_info'),
         ),
-        MelFidList(b'NVCI','unknownDoors',),
+        MelArray(u'unknownDoors', MelFid(b'NVCI')),
     )
     __slots__ = melSet.getSlotsUsed()
 
@@ -2029,7 +2029,7 @@ class MreNote(MelRecord):
         MelPickupSound(),
         MelDropSound(),
         MelUInt8(b'DATA', 'dataType'),
-        MelSorted(MelFidList(b'ONAM', 'quests')),
+        MelSorted(MelArray(u'quests', MelFid(b'ONAM'))),
         MelString(b'XNAM','texture'),
         MelUnion({
             3: MelFid(b'TNAM', u'textTopic'),
@@ -2243,7 +2243,7 @@ class MrePack(MelRecord):
                                         'unused'),
                               counter='animation_count', counts='animations'),
             MelFloat(b'IDLT', 'idleTimerSetting'),
-            MelFidList(b'IDLA','animations'),
+            MelArray(u'animations', MelFid(b'IDLA')),
             MelBase(b'IDLB','idlb_p'),
         ),
         MelBase(b'PKED','eatMarker'),
@@ -2662,8 +2662,8 @@ class MreRace(MelRecord):
         # Note: xEdit marks both HNAM and ENAM as sorted. They are not, but
         # changing it would cause too many conflicts. We do *not* want to mark
         # them as sorted here, because that's what the Race Checker is for!
-        MelFidList(b'HNAM','hairs'),
-        MelFidList(b'ENAM','eyes'),
+        MelArray(u'hairs', MelFid(b'HNAM')),
+        MelArray(u'eyes', MelFid(b'ENAM')),
         MelBase(b'MNAM', 'male_facegen_marker', b''),
         MelRaceFaceGen('maleFaceGen'),
         MelBase(b'FNAM', 'female_facegen_marker', b''),
@@ -2873,7 +2873,7 @@ class MreRegn(MelRecord):
                           (FID, u'global')),
             ), sort_by_attrs='weather')),
             fnv_only(MelRegnEntrySubrecord(
-                8, MelFidList(b'RDID', 'imposters'))),
+                8, MelArray(u'imposters', MelFid(b'RDID')))),
         ), sort_by_attrs='entryType'),
     )
     __slots__ = melSet.getSlotsUsed()
@@ -3208,7 +3208,7 @@ class MreWatr(MelRecord):
         MelWatrDnam(b'DNAM', _fmts + [u'35f'], *(
                 _els + ['noiseLayer1Amp', 'noiseLayer2Amp', 'noiseLayer3Amp']),
                     old_versions={'10f3Bs3Bs3BsI32f'}),
-        MelFidList(b'GNAM','relatedWaters'),
+        MelArray(u'relatedWaters', MelFid(b'GNAM')),
     )
     __slots__ = melSet.getSlotsUsed()
 

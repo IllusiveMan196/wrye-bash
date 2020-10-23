@@ -32,7 +32,7 @@ from .advanced_elements import AttrValDecider, MelArray, MelTruncatedStruct, \
 from .basic_elements import MelBase, MelFid, MelGroup, MelGroups, MelLString, \
     MelNull, MelSequential, MelString, MelStruct, MelUInt32, MelOptStruct, \
     MelFloat, MelReadOnly, MelFids, MelUInt32Flags, MelUInt8Flags, MelSInt32, \
-    MelStrings, MelUInt8, MelFidList
+    MelStrings, MelUInt8
 from .utils_constants import _int_unpacker, FID, null1
 from ..bolt import Flags, encode, struct_pack, struct_unpack, unpack_byte, \
     dict_sort
@@ -768,7 +768,7 @@ class MelActorSounds(MelSorted):
 class MelRegions(MelSorted):
     """Handles the CELL subrecord XCLR (Regions)."""
     def __init__(self):
-        super(MelRegions, self).__init__(MelFidList(b'XCLR', u'regions'))
+        super(MelRegions, self).__init__(MelArray(u'regions', MelFid(b'XCLR')))
 
 #------------------------------------------------------------------------------
 class MelWeatherTypes(MelSorted):
