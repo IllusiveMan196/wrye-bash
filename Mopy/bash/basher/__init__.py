@@ -557,7 +557,8 @@ class MasterList(_ModsUIList):
     #--GetMasters
     def GetNewMasters(self):
         """Returns new master list."""
-        return [v.curr_name for k, v in dict_sort(self.data_store)]
+        # FIXME those should be unicode not paths
+        return [v.curr_name.s for k, v in dict_sort(self.data_store)]
 
 #------------------------------------------------------------------------------
 class INIList(balt.UIList):

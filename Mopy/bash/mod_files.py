@@ -195,7 +195,7 @@ class ModFile(object):
         self.fileInfo = fileInfo
         self.loadFactory = loadFactory or LoadFactory(True) ##: trace
         #--Variables to load
-        self.tes4 = bush.game.plugin_header_class(RecHeader())
+        self.tes4 = bush.game.plugin_header_class(RecHeader()) # type: brec.MreHeaderBase
         self.tes4.setChanged()
         self.strings = bolt.StringTable()
         self.tops = _RecGroupDict(self) #--Top groups.
@@ -341,7 +341,7 @@ class ModFile(object):
 
     def augmented_masters(self):
         """List of plugin masters with the plugin's own name appended."""
-        return [*self.tes4.masters, self.fileInfo.ci_key]
+        return [*self.tes4.masters_paths, self.fileInfo.ci_key]
 
     def getShortMapper(self):
         """Returns a mapping function to map long fids to short fids."""

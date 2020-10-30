@@ -269,7 +269,7 @@ class CreateNewPlugin(DialogWindow):
         self._master_search.on_text_changed.subscribe(self._handle_search)
         self._masters_box = CheckListBox(self)
         # Initially populate the masters list, checking only the game master
-        self._masters_dict = {m.s: m == bush.game.master_file for m in
+        self._masters_dict = {m: m == bush.game.master_file for m in
                               load_order.cached_lo_tuple()}
         self._masters_box.set_all_items(self._masters_dict)
         # Only once that's done do we subscribe - avoid all the initial events

@@ -37,7 +37,7 @@ from .common_subrecords import MelEdid
 from .record_structs import MelRecord, MelSet
 from .utils_constants import FID
 from .. import bolt, exception
-from ..bolt import to_unix_newlines, ChardetStr, StripNewlines
+from ..bolt import to_unix_newlines, ChardetStr, StripNewlines, GPath_no_norm
 from ..exception import StateError
 
 #------------------------------------------------------------------------------
@@ -158,6 +158,10 @@ class MreHeaderBase(MelRecord):
 
     @property
     def num_masters(self): return len(self.plugin_masters)
+
+    @property
+    def masters_paths(self): # TODO: drop!
+        return [GPath_no_norm(u'%s' % x) for x in self.masters]
 
     __slots__ = []
 
