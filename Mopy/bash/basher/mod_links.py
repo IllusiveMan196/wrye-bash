@@ -1703,7 +1703,8 @@ class Mod_Face_Import(OneItemLink):
         srcInfo = bosh.SaveInfo(srcPath, load_cache=True)
         srcFace = bosh.faces.PCFaces.save_getPlayerFace(srcInfo)
         #--Save Face
-        npc = bosh.faces.PCFaces.mod_addFace(self._selected_info, srcFace)
+        npc = bosh.faces.PCFaces.mod_addFace(self._selected_info, srcFace,
+                                             bosh.modInfos.masterName)
         ##: Saves an image of the save file's screenshot for some reason?
         imagePath = bosh.modInfos.store_dir.join(u'Docs', u'Images', npc.eid + u'.jpg')
         if not imagePath.exists():
