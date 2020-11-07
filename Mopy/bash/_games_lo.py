@@ -35,7 +35,7 @@ from collections import defaultdict, OrderedDict
 
 # Local
 from . import bass, bolt, env, exception
-from .bolt import GPath_no_norm, dict_sort
+from .bolt import dict_sort, cext_, CIstr
 from .ini_files import get_ini_type_and_encoding
 
 def _write_plugins_txt_(path, lord, active, _star):
@@ -56,7 +56,7 @@ def __write_plugins(out, lord, active, _star):
         # plugins.txt.  Even activating through the SkyrimLauncher
         # doesn't work.
         try:
-            out.write(asterisk() + bolt.encode(mod.s, firstEncoding=u'cp1252'))
+            out.write(asterisk() + bolt.encode(mod, firstEncoding=u'cp1252'))
             out.write(b'\r\n')
         except UnicodeEncodeError:
             bolt.deprint(u'%s failed to properly encode and was not '
@@ -92,17 +92,16 @@ def _parse_plugins_txt_(path, mod_infos, _star):
             except UnicodeError:
                 bolt.deprint(f'{modname!r} failed to properly decode')
                 continue
-            mod_g_path = GPath_no_norm(test)
+            mod_g_path = CIstr(test)
             if mod_g_path not in mod_infos: # TODO(ut): is this really needed??
                 # The automatic encoding detector could have returned
                 # an encoding it actually wasn't.  Luckily, we
                 # have a way to double check: modInfos.data
                 for encoding in bolt.encodingOrder:
                     try:
-                        test2 = str(modname, encoding)
-                        mod_gpath_2 = GPath_no_norm(test2)
-                        if mod_gpath_2 in mod_infos:
-                            mod_g_path = mod_gpath_2
+                        test2 = str(modname, encoding) ##: CIstr(modname, encoding)
+                        if test2 in mod_infos:
+                            mod_g_path = CIstr(test2)
                             break
                     except UnicodeError:
                         pass
@@ -199,7 +198,7 @@ class Game(object):
         super(Game, self).__init__()
         self.plugins_txt_path = plugins_txt_path # type: bolt.Path
         self.mod_infos = mod_infos # this is bosh.ModInfos, must be up to date
-        self.master_path = mod_infos.masterName # type: bolt.Path
+        self.master_path = mod_infos.masterName # type: bolt.CIstr
         self.mtime_plugins_txt = 0.0
         self.size_plugins_txt = 0
 
@@ -552,7 +551,7 @@ class Game(object):
         # never be active
         cached_minfs = self.mod_infos
         acti_filtered = [x for x in acti if x in cached_minfs
-                         and x.cext != u'.esu']
+                         and cext_(x) != u'.esu']
         # Use sets to avoid O(n) lookups due to lists
         acti_filtered_set = set(acti_filtered)
         lord_set = set(lord)
@@ -732,13 +731,13 @@ class INIGame(Game):
 
         :type cached_ini: bosh.ini_files.IniFile
         :type ini_key: tuple[unicode, unicode, unicode]
-        :rtype: list[bolt.Path]"""
+        :rtype: list[bolt.CIstr]"""
         # Returned format is dict[CIstr, tuple[unicode, int]], we want the
         # unicode (i.e. the mod names)
         section_mapping = cached_ini.get_setting_values(ini_key[1], {})
         # Sort by line number, then convert the values to paths and return
         section_vals = dict_sort(section_mapping, values_dex=[1])
-        return [GPath_no_norm(x[1][0]) for x in section_vals]
+        return [CIstr(x[1][0]) for x in section_vals]
 
     @staticmethod
     def _write_ini(cached_ini, ini_key, mod_list):
@@ -753,7 +752,7 @@ class INIGame(Game):
         # Now, write out the changed values - no backup here
         section_contents = OrderedDict()
         for i, lo_mod in enumerate(mod_list):
-            section_contents[ini_key[2] % {u'lo_idx': i}] = lo_mod.s
+            section_contents[ini_key[2] % {u'lo_idx': i}] = lo_mod
         cached_ini.saveSettings({ini_key[1]: section_contents})
 
     # Backups
@@ -992,7 +991,7 @@ class TimestampGame(Game):
         if fix_lo is not None and fix_lo.lo_added:
             # should not occur, except if undoing
             bolt.deprint(u'Incomplete load order passed in to set_load_order. '
-                u'Missing: ' + u', '.join(x.s for x in fix_lo.lo_added))
+                u'Missing: ' + u', '.join(fix_lo.lo_added))
             lord[:] = self.__calculate_mtime_order(mods=lord)
 
 # TimestampGame overrides
@@ -1023,7 +1022,7 @@ class TextfileGame(Game):
         # Starting with Skyrim LE, the Update.esm file needs to be removed from
         # plugins.txt too
         return super(TextfileGame, self)._active_entries_to_remove() | {
-            GPath_no_norm(u'Update.esm')}
+            CIstr(u'Update.esm')}
 
     def load_order_changed(self):
         # if active changed externally refetch load order to check for desync
@@ -1308,7 +1307,7 @@ class AsteriskGame(Game):
                 for ccc_line in ins.readlines():
                     try:
                         ccc_dec = bolt.decoder(ccc_line, encoding=u'cp1252')
-                        ccc_contents.append(GPath_no_norm(ccc_dec.strip()))
+                        ccc_contents.append(CIstr(ccc_dec.strip()))
                     except UnicodeError:
                         bolt.deprint(u'Failed to decode CCC entry %r'
                                      % ccc_line)
@@ -1413,22 +1412,22 @@ class WindowsStoreGame(Game):
 
 # TextfileGame overrides
 class Skyrim(TextfileGame):
-    must_be_active_if_present = tuple(GPath_no_norm(p) for p in (
+    must_be_active_if_present = tuple(CIstr(p) for p in (
         u'Update.esm', u'Dawnguard.esm', u'Hearthfires.esm',
         u'Dragonborn.esm'))
 
 class Enderal(TextfileGame):
-    must_be_active_if_present = tuple(GPath_no_norm(p) for p in (
+    must_be_active_if_present = tuple(CIstr(p) for p in (
         u'Update.esm', u'Enderal - Forgotten Stories.esm'))
 
 # AsteriskGame overrides
 class Fallout4(AsteriskGame):
-    must_be_active_if_present = tuple(GPath_no_norm(p) for p in (
+    must_be_active_if_present = tuple(CIstr(p) for p in (
         u'DLCRobot.esm', u'DLCworkshop01.esm', u'DLCCoast.esm',
         u'DLCWorkshop02.esm', u'DLCWorkshop03.esm', u'DLCNukaWorld.esm',
         u'DLCUltraHighResolution.esm'))
     _ccc_filename = u'Fallout4.ccc'
-    _ccc_fallback = tuple(GPath_no_norm(p) for p in (
+    _ccc_fallback = tuple(CIstr(p) for p in (
         # Up to date as of 2019/11/22
         u'ccBGSFO4001-PipBoy(Black).esl',
         u'ccBGSFO4002-PipBoy(Blue).esl',
@@ -1592,15 +1591,15 @@ class Fallout4(AsteriskGame):
 
 class Fallout4VR(Fallout4):
     must_be_active_if_present = Fallout4.must_be_active_if_present + (
-        GPath_no_norm(u'Fallout4_VR.esm'),)
+        CIstr(u'Fallout4_VR.esm'),)
     _ccc_filename = u''
 
 class SkyrimSE(AsteriskGame):
-    must_be_active_if_present = tuple(GPath_no_norm(p) for p in (
+    must_be_active_if_present = tuple(CIstr(p) for p in (
         u'Update.esm', u'Dawnguard.esm', u'Hearthfires.esm', u'Dragonborn.esm'
     ))
     _ccc_filename = u'Skyrim.ccc'
-    _ccc_fallback = tuple(GPath_no_norm(p) for p in (
+    _ccc_fallback = tuple(CIstr(p) for p in (
         # Up to date as of 2019/11/22
         u'ccBGSSSE002-ExoticArrows.esl',
         u'ccBGSSSE003-Zombies.esl',
@@ -1664,12 +1663,12 @@ class SkyrimSE(AsteriskGame):
 
 class SkyrimVR(SkyrimSE):
     must_be_active_if_present = SkyrimSE.must_be_active_if_present + (
-        GPath_no_norm(u'SkyrimVR.esm'),)
+        CIstr(u'SkyrimVR.esm'),)
     _ccc_filename = u''
 
 class EnderalSE(SkyrimSE):
     # Update.esm is forcibly loaded after the (empty) DLC plugins by the game
-    must_be_active_if_present = tuple(GPath_no_norm(p) for p in (
+    must_be_active_if_present = tuple(CIstr(p) for p in (
         u'Dawnguard.esm', u'Hearthfires.esm', u'Dragonborn.esm', u'Update.esm',
         u'Enderal - Forgotten Stories.esm',
     ))
@@ -1678,7 +1677,7 @@ class EnderalSE(SkyrimSE):
         return super(EnderalSE, self)._active_entries_to_remove() - {
             # Enderal - Forgotten Stories.esm is *not* hardcoded to load, so
             # don't remove it from the LO
-            GPath_no_norm(u'Enderal - Forgotten Stories.esm'),
+            CIstr(u'Enderal - Forgotten Stories.esm'),
         }
 
 # WindowsStoreGame overrides

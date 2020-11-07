@@ -69,7 +69,7 @@ class MreHeaderBase(MelRecord):
                 # we want to use automatic encoding detection
                 master_name = decoder(bolt.cstrip(ins.read(size_, *debug_strs)),
                                       avoidEncodings=(u'utf8', u'utf-8'))
-                record.masters.append(GPath(master_name))
+                record.masters.append(master_name) # FIXME: CIstr??
             else: # sub_type == 'DATA'
                 # DATA is the size for TES3, but unknown/unused for later games
                 record.master_sizes.append(
@@ -86,7 +86,7 @@ class MreHeaderBase(MelRecord):
             for master_name, master_size in zip(record.masters,
                                                  record.master_sizes):
                 MelUnicode(b'MAST', '', encoding=u'cp1252').packSub(
-                    out, master_name.s)
+                    out, master_name)
                 MelBase(b'DATA', '').packSub(
                     out, struct_pack(u'Q', master_size))
 

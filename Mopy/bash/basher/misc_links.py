@@ -29,7 +29,7 @@ from .. import bass, balt, bosh, bush
 from ..balt import EnabledLink, AppendableLink, ItemLink, RadioLink, \
     ChoiceMenuLink, CheckLink, UIList_Rename, OneItemLink, SeparatorLink
 from ..bolt import GPath
-from ..gui import ImageWrapper
+from ..gui import ImageWrapper, os
 
 __all__ = [u'ColumnsMenu', u'Master_ChangeTo', u'Master_Disable',
            u'Screens_NextScreenShot', u'Screens_JpgQuality',
@@ -95,7 +95,7 @@ class Screen_ConvertTo(EnabledLink):
 
     def _enable(self):
         self.convertable = [s for s in self.selected if
-                            s.cext != u'.' + self.ext]
+                            not s.endswith(self.ext)]
         return bool(self.convertable)
 
     def Execute(self):
@@ -103,9 +103,9 @@ class Screen_ConvertTo(EnabledLink):
             with balt.Progress(_(u'Converting to %s') % self.ext) as progress:
                 progress.setFull(len(self.convertable))
                 for index, fileName in enumerate(self.convertable):
-                    progress(index,fileName.s)
+                    progress(index, fileName)
                     srcPath = bosh.screen_infos[fileName].abs_path
-                    destPath = srcPath.root+u'.'+self.ext
+                    destPath = srcPath.root+u'.'+self.ext ##: pathlib
                     if srcPath == destPath or destPath.exists(): continue
                     bitmap = ImageWrapper.Load(srcPath, quality=bass.settings[
                         u'bash.screens.jpgQuality'])
@@ -234,7 +234,7 @@ class Master_Disable(AppendableLink, _Master_EditList):
         master_info = self._selected_info
         ##: We could simplify this down to just unique_key if we had a ModInfo
         # instance and could pass the new extension in directly
-        esp_name = GPath(u'XX%s.esp' % master_info.curr_name.sroot)
+        esp_name = (u'XX%s.esp' % os.path.splitext(master_info.curr_name)[0])
         master_info.set_name(bosh.ModInfo.unique_name(esp_name))
         self.window.SetMasterlistEdited(repopulate=True)
 

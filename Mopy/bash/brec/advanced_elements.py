@@ -37,7 +37,7 @@ from itertools import chain
 from .basic_elements import MelBase, MelNull, MelObject, MelStruct, \
     MelSequential
 from .. import exception
-from ..bolt import GPath, structs_cache, attrgetter_cache
+from ..bolt import GPath, structs_cache, attrgetter_cache, cext_
 
 #------------------------------------------------------------------------------
 class _MelDistributor(MelNull):
@@ -584,7 +584,7 @@ class FidNotNullDecider(ACommonDecider):
         # can't import bush in __init__...
         from .. import bush
         return getattr(record, self._target_attr) != (
-            GPath(bush.game.master_file), 0)
+            GPath(bush.game.master_file), 0) ## FIXME CIStr
 
 class AttrValDecider(ACommonDecider):
     """Decider that returns an attribute value (may optionally apply a function
@@ -693,7 +693,7 @@ class SaveDecider(ADecider):
         self._save_ext = bush.game.Ess.ext
 
     def decide_load(self, record, ins, sub_type, rec_size):
-        return ins.inName.cext == self._save_ext
+        return cext_(ins.inName) == self._save_ext
 
 class SignatureDecider(ADecider):
     """Very simple decider that just returns the subrecord type (aka

@@ -1123,7 +1123,10 @@ class Flags(object):
 #------------------------------------------------------------------------------
 class DataDict(object):
     """Mixin class that handles dictionary emulation, assuming that
-    dictionary is its 'data' attribute."""
+    dictionary is its '_data' attribute."""
+
+    def __init__(self, data_dict):
+        self._data= data_dict # not final - see for instance InstallersData
 
     def __contains__(self,key):
         return key in self._data
@@ -1322,6 +1325,7 @@ class PickleDict(object):
                 cor = None
             try:
                 resave = False
+                print (u'Loading %s' % path)
                 with path.open(u'rb') as ins:
                     try:
                         firstPickle = pickle.load(ins, encoding='bytes')
@@ -1397,10 +1401,10 @@ class Settings(DataDict):
             res = dictFile.load()
             self.cleanSave = res == 0 # no data read - do not attempt to read on save
             self.vdata = dictFile.vdata.copy()
-            self._data = dictFile.pickled_data.copy()
+            super(Settings, self).__init__(dictFile.pickled_data.copy())
         else:
             self.vdata = {}
-            self._data = {}
+            super(Settings, self).__init__({})
         self.defaults = {}
         self.changed = set()
         self.deleted = set()
@@ -1596,18 +1600,49 @@ class DataTable(DataDict):
     Rows are the first index ('fileName') and columns are the second index
     ('propName')."""
 
+    def __drop_paths(self #, nested_dict=None
+                     ):
+        # if nested_dict is None:
+        #     nested_dict = self.dictFile.pickled_data
+        deprint(u'pruning paths from %s' % dict(
+            (x, self.dictFile.pickled_data[x]) for x in
+            list(self.dictFile.pickled_data)[:10]))
+        copy_data = list(self.dictFile.pickled_data.items())
+        self.dictFile.pickled_data.clear()
+        lo_dict = LowerDict()
+        for k, v in copy_data:
+            # if isinstance(v, dict):
+            #     v = self.__drop_paths(v)
+            if isinstance(k, Path):
+                k = k.s
+            lo_dict[k] = v
+        return lo_dict
+
+    def __backwards_comp(self, nested_dict=None):
+        if nested_dict is None:
+            nested_dict = self._data
+        print(u'restoring paths in %s' % nested_dict)
+        builtin_dict = dict()
+        for k, v in nested_dict.iteritems():
+            k = GPath(k)
+            # if isinstance(v, dict):
+            #     v = self.__backwards_comp(v)
+            builtin_dict[k] = v
+        return builtin_dict
+
     def __init__(self,dictFile):
         """Initialize and read data from dictFile, if available."""
-        self.dictFile = dictFile
+        self.dictFile = dictFile # type: PickleDict
         dictFile.load()
         self.vdata = dictFile.vdata
-        self._data = dictFile.pickled_data
+        super(DataTable, self).__init__(self.__drop_paths())
         self.hasChanged = False ##: move to PickleDict
 
     def save(self):
         """Saves to pickle file."""
         dictFile = self.dictFile
         if self.hasChanged and not dictFile.readOnly:
+            dictFile.pickled_data = self.__backwards_comp()
             self.hasChanged = not dictFile.save()
 
     def getItem(self,row,column,default=None):

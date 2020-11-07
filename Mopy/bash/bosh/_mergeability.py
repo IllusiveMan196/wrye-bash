@@ -120,9 +120,9 @@ def _join_sigs(modFile):
 def _dependent(minfo_key, minfos):
     """Get mods for which modInfo is a master mod (excluding BPs and
     mergeable)."""
-    dependent = [mname.s for mname, info in minfos.items() if
-                 not info.isBP() and minfo_key in info.masterNames and
-                 mname not in minfos.mergeable]
+    dependent = [mname for mname, info in minfos.items() if not info.isBP() and
+                 minfo_key in info.masterNames and mname not in
+                 minfos.mergeable]
     return dependent
 
 def is_esl_capable(modInfo, _minfos, reasons):

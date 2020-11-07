@@ -421,9 +421,9 @@ class Installer_Duplicate(OneItemLink, _InstallerLink):
         newName = self._selected_info.unique_key(self._selected_item.root,
                                                  add_copy=True)
         allowed_exts = {} if not self._selected_info.is_archive() else {
-            self._selected_item.ext}
+            self._selected_info.abs_path.ext}
         result = self._askFilename(
-            _(u'Duplicate %s to:') % self._selected_item, newName.s,
+            _(u'Duplicate %s to:') % self._selected_item, newName,
             inst_type=type(self._selected_info),
             disallow_overwrite=True, no_dir=False, ##: no_dir=False?
             allowed_exts=allowed_exts, use_default_ext=False)
@@ -679,9 +679,8 @@ class _Installer_OpenAt(_InstallerLink):
 
     def _enable(self):
         # The menu won't even be enabled if >1 plugin is selected
-        x = self.__class__.regexp.search(self.selected[0].s)
-        if not x: return False
-        self.mod_url_id = x.group(self.__class__.group)
+        x = self.__class__.regexp.search(self.selected[0])
+        self.mod_url_id = x and x.group(self.__class__.group)
         return bool(self.mod_url_id)
 
     def _url(self): return self.__class__.baseUrl + self.mod_url_id
@@ -813,7 +812,7 @@ class Installer_CopyConflicts(_SingleInstallable):
                            u'\n' + u' ' * 60) as progress:
             progress.setFull(len(self.idata))
             numFiles = 0
-            destDir = GPath(u'Conflicts - %03d' % src_order)
+            destDir = u'Conflicts - %03d' % src_order
             for i,(package, installer) in enumerate(self.idata.sorted_pairs()):
                 curConflicts = set()
                 progress(i, _(u'Scanning Packages...') + u'\n%s' % package)
@@ -858,8 +857,8 @@ class Installer_CopyConflicts(_SingleInstallable):
             curConflicts = srcConflicts
             curFile = _copy_conflicts(curFile)
             for order,package,curConflicts in packConflicts:
-                g_path = GPath(u'%03d - %s' % (
-                    order if order < src_order else order + 1, package.s))
+                g_path = u'%03d - %s' % (
+                    order if order < src_order else order + 1, package)
                 curFile = _copy_conflicts(curFile)
         InstallerProject.refresh_installer(destDir, self.idata, progress=None,
             install_order=src_order + 1, do_refresh=True)
@@ -1186,10 +1185,10 @@ class InstallerProject_Pack(_SingleProject):
     @balt.conversation
     def Execute(self):
         #--Generate default filename from the project name and the default extension
-        archive_name = GPath(self._selected_item.s + archives.defaultExt)
+        archive_name = self._selected_item + archives.defaultExt
         #--Confirm operation
         archive_name = self._askFilename(
-            _(u'Pack %s to Archive:') % self._selected_item, archive_name.s)
+            _(u'Pack %s to Archive:') % self._selected_item, archive_name)
         if not archive_name: return
         self._pack(archive_name, self._selected_info, self._selected_item,
                    release=self.__class__.release)
