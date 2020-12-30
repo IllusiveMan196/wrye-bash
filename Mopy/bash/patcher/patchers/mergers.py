@@ -32,7 +32,7 @@ from operator import attrgetter
 # Internal
 from ..base import ImportPatcher, ListPatcher
 from ... import bush
-from ...bolt import GPath
+from ...bolt import GPath, CIstr
 from ...exception import AbstractError, BoltError, ModSigMismatchError
 
 #------------------------------------------------------------------------------
@@ -840,7 +840,7 @@ class LeveledListsPatcher(_AListsMerger):
         super(LeveledListsPatcher, self).__init__(p_name, p_file, p_sources,
                                           remove_empty, tag_choices)
         self.empties = set()
-        _skip_id = lambda x: (GPath(bush.game.master_file), x)
+        _skip_id = lambda x: (CIstr(bush.game.master_file), x)
         self._overhaul_compat(self.srcs, _skip_id)
 
     def _check_list(self, record, log):

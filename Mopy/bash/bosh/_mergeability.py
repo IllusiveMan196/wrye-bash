@@ -23,6 +23,7 @@
 """Tmp module to get mergeability stuff out of bosh.__init__.py."""
 import os
 from .. import bush
+from ..bolt import body_
 from ..exception import ModError
 from ..mod_files import LoadFactory, ModHeaderReader, ModFile
 
@@ -71,7 +72,7 @@ def _pbash_mergeable_no_load(modInfo, reasons):
         if not verbose: return False
         from . import oblivionIni
         reasons.append(_(u'Missing String Translation Files (Strings\\%s_%s.STRINGS, etc).') % (
-            modInfo.name.sbody, oblivionIni.get_ini_language()))
+            body_( modInfo.ci_key), oblivionIni.get_ini_language()))
     return False if reasons else True
 
 def isPBashMergeable(modInfo, minfos, reasons):

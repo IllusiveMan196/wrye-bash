@@ -23,10 +23,10 @@
 """Temp module to encapsulate some shared dependencies left over from splitting
 special.py."""
 
-from ....bolt import GPath
+from ....bolt import CIstr
 from ....patcher.base import Abstract_Patcher
 
-cobl_main = GPath(u'Cobl Main.esm')
+cobl_main = CIstr(u'Cobl Main.esm')
 
 class ExSpecial(Abstract_Patcher):
     """Those used to be subclasses of SpecialPatcher that did not make much

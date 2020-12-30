@@ -248,7 +248,7 @@ class FileInfo(AFile, ListInfo):
         ##: We GPath this three times - not slow, but very inelegant
         g_path = GPath(fullpath)
         self.dir = g_path.head
-        self.name = g_path.tail.s # ghost must be lopped off
+        self.ci_key = CIstr(g_path.tail.s) # ghost must be lopped off
         self.header = None
         self.masterNames = tuple()
         self.masterOrder = tuple()
@@ -260,8 +260,8 @@ class FileInfo(AFile, ListInfo):
         super(FileInfo, self).__init__(g_path, load_cache)
 
     def __str__(self):
-        """Alias for self.name."""
-        return self.name.s
+        """Alias for self.ci_key."""
+        return self.ci_key
 
     def _reset_masters(self):
         #--Master Names/Order
@@ -399,7 +399,7 @@ class FileInfo(AFile, ListInfo):
         """Returns parameters for next snapshot."""
         destDir = self.snapshot_dir
         destDir.makedirs()
-        (root,ext) = os.path.splitext(self.name)
+        (root,ext) = os.path.splitext(self.ci_key)
         separator = u'-'
         snapLast = [u'00']
         #--Look for old snapshots.
@@ -502,7 +502,7 @@ class ModInfo(FileInfo):
 
     def get_extension(self):
         """Returns the file extension of this mod."""
-        return cext_(self.name)
+        return cext_(self.ci_key)
 
     def has_esm_flag(self):
         """Check if the mod info is a master file based on master flag -
@@ -837,7 +837,7 @@ class ModInfo(FileInfo):
 
     def _string_files_paths(self, lang):
         # type: (unicode) -> Iterable[unicode]
-        str_f_body = body_(self.name)
+        str_f_body = body_(self.ci_key)
         str_f_ext = self.get_extension()
         for str_format in bush.game.Esp.stringsFiles:
             yield os.path.join(u'Strings', str_format % {
@@ -959,7 +959,7 @@ class ModInfo(FileInfo):
 
     def _check_resources(self, resource_path):
         """Returns True if the directory created by joining self.dir, the
-        specified path and self.name exists. Used to check for the existence
+        specified path and self.ci_key exists. Used to check for the existence
         of plugin-name-specific directories, which prevent merging.
 
         :param resource_path: The path to the plugin-name-specific directory,
@@ -1010,7 +1010,7 @@ class ModInfo(FileInfo):
         return False, u''
 
     def match_oblivion_re(self):
-        return reOblivion.match(self.ci_key.s)
+        return reOblivion.match(self.ci_key)
 
     def get_rename_paths(self, newName):
         old_new_paths = super(ModInfo, self).get_rename_paths(newName)
@@ -1722,7 +1722,7 @@ class FileInfos(TableFileInfos):
         super(FileInfos, self).rename_operation(member_info, newName)
         old_key = member_info.ci_key
         #--FileInfo
-        member_info.name = newName
+        member_info.ci_key = newName
         member_info.abs_path = self.store_dir.join(newName)
         #--FileInfos
         self[newName] = member_info
@@ -2584,7 +2584,7 @@ class ModInfos(FileInfos):
         dir_added, dir_removed = read_dir_tags(mname)
         has_tags_source |= bool(dir_added | dir_removed)
         tags_file = u"'%s/BashTags/%s'" % (bush.game.mods_dir,
-                                           mname.body + u'.txt')
+                                           body_(mname) + u'.txt')
         if dir_added:
             tagList = _tags(_(u'Added by %s: ') % tags_file, sorted(dir_added),
                             tagList)

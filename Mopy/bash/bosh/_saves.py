@@ -466,7 +466,7 @@ class SaveFile(object):
             if modIndex < len(self._masters):
                 return self._masters[modIndex]
             elif modIndex == 0xFF:
-                return self.fileInfo.name
+                return self.fileInfo.ci_key
             else:
                 return _(u'Missing Master ')+hex(modIndex)
         #--ABomb

@@ -34,7 +34,7 @@ from itertools import chain
 from .base import is_templated
 from ..base import Patcher, ModLoader
 from ... import bush, bolt
-from ...bolt import GPath, deprint, dict_sort
+from ...bolt import deprint, dict_sort, CIstr
 from ...brec import strFid
 from ...mod_files import LoadFactory
 
@@ -152,7 +152,7 @@ class ContentsCheckerPatcher(Patcher):
                                                    removedId[1]))
 
 #------------------------------------------------------------------------------
-_main_master = GPath(bush.game.master_file)
+_main_master = CIstr(bush.game.master_file)
 class EyeCheckerPatcher(Patcher):
     patcher_group = u'Special'
     patcher_order = 29 # Run before Tweak Races
@@ -328,7 +328,7 @@ def _find_vanilla_eyes():
         rc_file, rc_obj = rc_fid
         if rc_file is None: # special case: None = game master
             rc_file = bush.game.master_file
-        return GPath(rc_file), rc_obj
+        return CIstr(rc_file), rc_obj
     ret = {}
     for race_fid, race_eyes in bush.game.default_eyes.items():
         new_key = _conv_fid(race_fid)
