@@ -29,7 +29,7 @@ from .. import bass, balt, bosh, bush
 from ..balt import EnabledLink, AppendableLink, ItemLink, RadioLink, \
     ChoiceMenuLink, CheckLink, UIList_Rename, OneItemLink, SeparatorLink
 from ..bolt import GPath
-from ..gui import ImageWrapper, os
+from ..gui import ImageWrapper
 
 __all__ = [u'ColumnsMenu', u'Master_ChangeTo', u'Master_Disable',
            u'Screens_NextScreenShot', u'Screens_JpgQuality',
@@ -205,12 +205,13 @@ class Master_ChangeTo(_Master_EditList):
             self._showError(_(u'File must be selected from %s '
                               u'directory.') % bush.game.mods_dir)
             return
-        elif newName == master_name:
+        elif newName.s == master_name:
             return
         #--Save Name
-        masterInfo.set_name(newName)
-        bass.settings.getChanged(u'bash.mods.renames')[master_name] = newName
-        self.window.SetMasterlistEdited(repopulate=True)
+        if masterInfo.rename_if_present(newName.s):
+            ##: should be True but needs extra validation -> cycles?
+            bass.settings.getChanged(u'bash.mods.renames')[master_name] = masterInfo.curr_name ## FIXME bash.mods.renames was Paths
+            self.window.SetMasterlistEdited(repopulate=True)
 
 #------------------------------------------------------------------------------
 class Master_Disable(AppendableLink, _Master_EditList):
@@ -231,11 +232,7 @@ class Master_Disable(AppendableLink, _Master_EditList):
         return self._selected_info.curr_name.cext == u'.esm'
 
     def Execute(self):
-        master_info = self._selected_info
-        ##: We could simplify this down to just unique_key if we had a ModInfo
-        # instance and could pass the new extension in directly
-        esp_name = (u'XX%s.esp' % os.path.splitext(master_info.curr_name)[0])
-        master_info.set_name(bosh.ModInfo.unique_name(esp_name))
+        self._selected_info.disable_master()
         self.window.SetMasterlistEdited(repopulate=True)
 
 #------------------------------------------------------------------------------
