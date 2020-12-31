@@ -1736,7 +1736,7 @@ class FileInfos(TableFileInfos):
         super(FileInfos, self).rename_operation(member_info, newName)
         old_key = member_info.ci_key
         #--FileInfo
-        member_info.ci_key = newName
+        member_info.ci_key = CIstr(newName)
         member_info.abs_path = self.store_dir.join(newName)
         #--FileInfos
         self[newName] = member_info

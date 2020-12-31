@@ -3501,10 +3501,10 @@ class BSADetails(_EditableMixinOnFileInfos, SashPanel):
     def DoSave(self):
         """Event: Clicked Save button."""
         #--Change Tests
-        changeName = (self.fileStr != self._bsa_info.ci_key)
+        newName = self.fileStr.strip()
+        changeName = (newName != self._bsa_info.ci_key)
         #--Change Name?
         if changeName:
-            newName = GPath(self.fileStr.strip())
             if self.panel_uilist.try_rename(self._bsa_info, newName):
                 self.panel_uilist.RefreshUI(detail_item=self.file_info.ci_key)
 
