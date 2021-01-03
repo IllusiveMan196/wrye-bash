@@ -27,6 +27,7 @@ from . import bEnableWizard, BashFrame
 from .constants import installercons
 from .. import bass, balt, bosh, bolt, bush, env, load_order
 from ..balt import colors
+from ..bolt import CIstr
 from ..bosh import faces, ModInfo
 from ..gui import BOTTOM, CancelButton, CENTER, CheckBox, GridLayout, \
     HLayout, Label, LayoutOptions, OkButton, RIGHT, Stretch, TextField, \
@@ -168,7 +169,7 @@ class CreateNewProject(DialogWindow):
         self.OnCheckProjectsColorTextCtrl(self.textName.text_content)
 
     def OnCheckProjectsColorTextCtrl(self, new_text):
-        projectName = bolt.GPath(new_text)
+        projectName = CIstr(new_text)
         if projectName in self.existingProjects: #Fill this in. Compare this with the self.existingprojects list
             self.textName.set_background_color(colors[u'default.warn'])
             self.textName.tooltip = _(u'There is already a project with that name!')

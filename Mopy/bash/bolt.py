@@ -763,7 +763,7 @@ class Path(object):
     def list(self):
         """For directory: Returns list of files."""
         try:
-            return [GPath_no_norm(x) for x in os.listdir(self._s)]
+            return [CIstr(x) for x in os.listdir(self._s)]
         except FileNotFoundError:
             return []
 
