@@ -43,7 +43,8 @@ from .. import bass, bolt, bosh, bush, balt, archives
 from ..balt import EnabledLink, CheckLink, AppendableLink, OneItemLink, \
     UIList_Rename, UIList_Hide
 from ..belt import InstallerWizard, generateTweakLines
-from ..bolt import GPath, SubProgress, LogFile, round_size, text_wrap
+from ..bolt import GPath, SubProgress, LogFile, round_size, text_wrap, body_, \
+    cext_
 from ..bosh import InstallerArchive, InstallerProject
 from ..exception import CancelError, SkipError, StateError
 from ..gui import BusyCursor, copy_text_to_clipboard
@@ -91,7 +92,7 @@ class _InstallerLink(Installers_Link, EnabledLink):
     def _pack(self, archive_path, installer, project, release=False):
         #--Archive configuration options
         blockSize = None
-        if archive_path.cext in archives.noSolidExts:
+        if cext_(archive_path) in archives.noSolidExts:
             isSolid = False
         else:
             if not u'-ms=' in bass.inisettings[u'7zExtraCompressionArguments']:
@@ -205,7 +206,7 @@ class Installer_Fomod(_Installer_AWizardLink):
                 with BusyCursor():
                     # Select the package we want to install - posts events to
                     # set details and update GUI
-                    self.window.SelectItem(GPath(sel_package.archive))
+                    self.window.SelectItem(sel_package.archive)
                     try:
                         fm_wizard = InstallerFomod(self.window, sel_package)
                     except CancelError:
@@ -266,7 +267,7 @@ class Installer_Wizard(_Installer_AWizardLink):
                 with BusyCursor():
                     # Select the package we want to install - posts events to
                     # set details and update GUI
-                    self.window.SelectItem(GPath(sel_package.archive))
+                    self.window.SelectItem(sel_package.archive)
                     idetails.refreshCurrent(sel_package)
                     try:
                         wizard = InstallerWizard(self.window, sel_package,
@@ -1055,16 +1056,16 @@ class InstallerArchive_Unpack(AppendableLink, _InstallerLink):
         # any dialogs we pop up
         to_unpack = []
         for iname, installer in self.idata.sorted_pairs(self.selected):
-            project = iname.root
+            project = os.path.splitext(iname)[0]
             if self.isSingleArchive():
                 result = self._askText(_(u'Unpack %s to Project:') % iname,
-                                       default=project.s) # TODO(ut): askFilename
+                                       default=project) # TODO(ut): askFilename
                 if not result: return
                 # Error checking
-                project = GPath(result).tail
-                if not project.s or project.cext in archives.readExts:
+                if GPath(project).stail != project or cext_(project) in \
+                        archives.readExts: # tail modified it contains a path sep
                     self._showWarning(_(u'%s is not a valid project name.') %
-                                      result)
+                                      project)
                     return
                 if self.idata.store_dir.join(project).isfile():
                     self._showWarning(_(u'%s is a file.') % project)
@@ -1332,8 +1333,8 @@ class InstallerConverter_Create(_InstallerConverter_Link):
                                        allowed_exts={archives.defaultExt})
         if not BCFArchive: return
         #--Error checking
-        if BCFArchive.csbody[-4:] != u'-bcf':
-            BCFArchive = GPath(BCFArchive.sbody + u'-BCF' + BCFArchive.cext).tail
+        if body_(BCFArchive)[-4:].lower() != u'-bcf':
+            BCFArchive = body_(BCFArchive) + u'-BCF' + archives.defaultExt
         if bass.dirs[u'converters'].join(BCFArchive).exists():
             #--It is safe to removeConverter, even if the converter isn't overwritten or removed
             #--It will be picked back up by the next refresh.
