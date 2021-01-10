@@ -25,13 +25,14 @@
 import copy
 import errno
 import io
+import os
 import re
 import time
 from datetime import timedelta
 from . import BashFrame, configIsCBash  ##: drop this - decouple !
 from .. import balt, bass, bolt, bosh, bush, env, load_order
 from ..balt import Link, Resources
-from ..bolt import SubProgress, GPath, Path
+from ..bolt import SubProgress, Path
 from ..exception import BoltError, CancelError, FileEditError, \
     PluginsFullError, SkipError, BPConfigError
 from ..gui import CancelButton, DeselectAllButton, HLayout, Label, \
@@ -197,7 +198,8 @@ class PatchDialog(DialogWindow):
             logValue = log.out.getvalue()
             timerString = str(timedelta(seconds=round(timer2 - timer1, 3))).rstrip(u'0')
             logValue = re.sub(u'TIMEPLACEHOLDER', timerString, logValue, 1)
-            readme = bosh.modInfos.store_dir.join(u'Docs', patch_name.sroot + u'.txt')
+            _sroot, __ext = os.path.splitext(patch_name)
+            readme = bosh.modInfos.store_dir.join(u'Docs', _sroot + u'.txt')
             docsDir = bass.dirs[u'mopy'].join(u'Docs')
             tempReadmeDir = Path.tempDir().join(u'Docs')
             tempReadme = tempReadmeDir.join(patch_name.sroot + u'.txt')
@@ -309,7 +311,7 @@ class PatchDialog(DialogWindow):
         exportConfig(patch_name=self.patchInfo.ci_key, config=config,
                      win=self.parent, outDir=bass.dirs[u'patches'])
 
-    __old_key = GPath(u'Saved Bashed Patch Configuration')
+    __old_key = u'Saved Bashed Patch Configuration'
     __new_key = u'Saved Bashed Patch Configuration (%s)'
     def ImportConfig(self):
         """Import the configuration from a user selected dat file."""
@@ -321,18 +323,17 @@ class PatchDialog(DialogWindow):
             u'Import Bashed Patch configuration from:'), textDir, config_dat,
             u'*.dat')
         if not textPath: return
-        table = bolt.DataTable(bolt.PickleDict(textPath))
         # try the current Bashed Patch mode.
-        patchConfigs = table.getItem(self.__new_key % u'Python',
-            u'bash.patch.configs', {})
+        table_get = bolt.DataTable(bolt.PickleDict(textPath)).getItem
+        patchConfigs = table_get(self.__new_key % u'Python',
+                                 u'bash.patch.configs', {})
         convert = False
         if not patchConfigs: # try the non-current Bashed Patch mode
-            patchConfigs = table.getItem(GPath(self.__new_key % u'CBash'),
-                u'bash.patch.configs', {})
+            patchConfigs = table_get(self.__new_key % u'CBash',
+                                     u'bash.patch.configs', {})
             convert = bool(patchConfigs)
         if not patchConfigs: # try the old format
-            patchConfigs = table.getItem(self.__old_key, u'bash.patch.configs',
-                {})
+            patchConfigs = table_get(self.__old_key, u'bash.patch.configs', {})
             convert = bool(patchConfigs)
         if not patchConfigs:
             balt.showWarning(self,
