@@ -499,20 +499,6 @@ class Path(object):
         """Used by pickler. _cs is redundant,so don't include."""
         return self._s
 
-    def __setstate__(self, norm):
-        """Used by unpickler. Reconstruct _cs."""
-        # Older pickle files stored filename in bytes, not unicode
-        norm = decoder(norm)  # decoder will check for unicode
-        self._s = norm
-        # Reconstruct _cs, lower() should suffice
-        global _conv_seps
-        try:
-            self._cs = _conv_seps(norm.lower())
-        except TypeError:
-            from .env import convert_separators
-            _conv_seps = convert_separators
-            self._cs = _conv_seps(norm.lower())
-
     def __len__(self):
         return len(self._s)
 
