@@ -582,8 +582,6 @@ if __name__ == u'__main__':
     setup_parser(argparser)
     parsed_args = argparser.parse_args()
     print(u'Building on Python {}'.format(sys.version))
-    if sys.version_info[0:3] < (2, 7, 12):
-        raise OSError(u'You must run at least Python 2.7.12 to package Wrye Bash.')
     rm(LOGFILE)
     rm(DIST_PATH)
     with clean_repo():
