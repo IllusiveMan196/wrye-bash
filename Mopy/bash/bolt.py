@@ -291,14 +291,6 @@ def float_or_none(uni_str):
     except ValueError:
         return None
 
-# PY3: Dicts are ordered by default on py3.7, so drop this in favor of just
-# collections.defaultdict
-class OrderedDefaultDict(collections.OrderedDict, collections.defaultdict):
-    """A defaultdict that preserves order."""
-    def __init__(self, default_factory=None, *args, **kwargs):
-        super(OrderedDefaultDict, self).__init__(*args, **kwargs)
-        self.default_factory = default_factory
-
 # LowStrings ------------------------------------------------------------------
 class CIstr(str):
     """See: http://stackoverflow.com/q/43122096/281545"""
@@ -343,14 +335,14 @@ class LowerDict(dict):
 
     @staticmethod # because this doesn't make sense as a global function.
     def _process_args(mapping=(), **kwargs):
-        if hasattr(mapping, u'iteritems'): # PY3: items
-            mapping = getattr(mapping, u'iteritems')()
+        if hasattr(mapping, u'items'):
+            mapping = getattr(mapping, u'items')()
         # PY3: fix mess below - kwargs keys are bytes im py2
         return ((CIstr(k) if type(k) is str else k, v) for k, v in chain(
             ((k.decode(u'ascii') if type(k) is bytes else k, v) for k, v in
              mapping),
             ((k.decode(u'ascii') if type(k) is bytes else k, v) for k, v in
-             getattr(kwargs, u'iteritems')())))
+             getattr(kwargs, u'items')())))
 
     def __init__(self, mapping=(), **kwargs):
         # dicts take a mapping or iterable as their optional first argument
@@ -659,37 +651,17 @@ class Path(object):
     @property
     def temp(self):
         """Temp file path."""
-        baseDir = GPath(str(tempfile.gettempdir(), Path.sys_fs_enc)).join(
-            u'WryeBash_temp')
+        baseDir = GPath(tempfile.gettempdir()).join(u'WryeBash_temp')
         baseDir.makedirs()
         return baseDir.join(self.tail + u'.tmp')
 
     @staticmethod
     def tempDir(prefix=u'WryeBash_'):
-        # workaround for http://bugs.python.org/issue1681974 see there - PY3: ?
-        try:
-            return GPath(tempfile.mkdtemp(prefix=prefix))
-        except UnicodeDecodeError:
-            try:
-                traceback.print_exc()
-                print(u'Trying to pass temp dir in...')
-                tempdir = str(tempfile.gettempdir(), Path.sys_fs_enc)
-                return GPath(tempfile.mkdtemp(prefix=prefix, dir=tempdir))
-            except UnicodeDecodeError:
-                try:
-                    traceback.print_exc()
-                    print(u'Trying to encode temp dir prefix...')
-                    return GPath(tempfile.mkdtemp(
-                        prefix=prefix.encode(Path.sys_fs_enc)).decode(
-                        Path.sys_fs_enc))
-                except:
-                    traceback.print_exc()
-                    print(u'Failed to create tmp dir, Bash will not function '
-                          u'correctly.')
+        return GPath(tempfile.mkdtemp(prefix=prefix))
 
     @staticmethod
     def baseTempDir():
-        return GPath(str(tempfile.gettempdir(), Path.sys_fs_enc))
+        return GPath(tempfile.gettempdir())
 
     @property
     def backup(self):
