@@ -1341,9 +1341,9 @@ class PickleDict(object):
         self.vdata.clear()
         self.pickled_data.clear()
         cor = cor_name =  None
-        def _perform_load():
-            self.vdata.update(pickle.load(ins))
-            self.pickled_data.update(pickle.load(ins))
+        def _perform_load(**kwargs):
+            self.vdata.update(pickle.load(ins), **kwargs)
+            self.pickled_data.update(pickle.load(ins), **kwargs)
         for path in (self._pkl_path, self.backup):
             if cor is not None:
                 cor.moveTo(cor_name)
@@ -1352,7 +1352,7 @@ class PickleDict(object):
                 resave = False
                 with path.open(u'rb') as ins:
                     try:
-                        firstPickle = pickle.load(ins)
+                        firstPickle = pickle.load(ins, encoding='bytes')
                     except ValueError:
                         cor = path
                         cor_name = GPath(
@@ -1364,7 +1364,7 @@ class PickleDict(object):
                         _perform_load() # new format, simply load
                     elif firstPickle == b'VDATA2':
                         # old format, load and convert
-                        _perform_load()
+                        _perform_load(encoding='bytes')
                         self.vdata = conv_obj(self.vdata)
                         self.pickled_data = conv_obj(self.pickled_data)
                         deprint(u'Converted %s to VDATA3 format' % path)
