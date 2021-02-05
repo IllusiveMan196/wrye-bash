@@ -2343,7 +2343,7 @@ class MrePerk(MelRecord):
                 MelUnion({
                     (0, 4): MelBase(b'EPFD', u'param1'),
                     1: MelFloat(b'EPFD', u'param1'),
-                    2: MelStruct(b'EPFD', [u'I', u'f'], u'param1', u'param2'),
+                    2: MelStruct(b'EPFD', [u'I', u'f'], (u'param1', None), u'param2'),
                     # 2: MelUnion({
                     #     5: MelStruct(b'EPFD', [u'I', u'f'], u'param1', u'param2'),
                     # }, decider=AttrValDecider(u'../function',

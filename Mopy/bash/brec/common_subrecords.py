@@ -574,7 +574,7 @@ class MelMapMarker(MelGroup):
             MelBase(b'XMRK', u'marker_data'),
             MelUInt8Flags(b'FNAM', u'marker_flags', self._marker_flags),
             MelFull(),
-            MelOptStruct(b'TNAM', [u'B', u's'], u'marker_type', u'unused1'),
+            MelOptStruct(b'TNAM', [u'B', u's'], u'marker_type', u'unused_map_marker'),
         ]
         if with_reputation:
             group_elems.append(MelFid(b'WMI1', u'marker_reputation'))

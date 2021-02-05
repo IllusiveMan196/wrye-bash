@@ -269,7 +269,7 @@ class MelIdleHandler(MelGroup):
             MelBase(b'SCTX', u'unused2'),
             MelBase(b'QNAM', u'unused3'),
             MelBase(b'TNAM', u'unused4'),
-            MelTopicData(u'idle_topic_data'),
+            MelTopicData(attr + u'_idle_topic_data'),
         )
 
 #------------------------------------------------------------------------------
@@ -3762,11 +3762,11 @@ class MrePack(MelRecord):
         MelVmad(),
         MelStruct(b'PKDT', [u'I', u'3B', u's', u'H', u'2s'], (_GeneralFlags, u'generalFlags'),
                   'package_type', 'interruptOverride', 'preferredSpeed',
-                  'unknown1', (_InterruptFlags, u'interruptFlags'),
+                  'unknown1_PKDT', (_InterruptFlags, u'interruptFlags'),
                   'unknown2'),
         MelStruct(b'PSDT', [u'2b', u'B', u'2b', u'3s', u'i'], 'schedule_month', 'schedule_day',
                   'schedule_date', 'schedule_hour', 'schedule_minute',
-                  'unused1', 'schedule_duration'),
+                  'unused1_PSDT', 'schedule_duration'),
         MelConditions(),
         MelGroup('idleAnimations',
             MelUInt8(b'IDLF', u'animation_flags'),
@@ -3923,7 +3923,7 @@ class MrePerk(MelRecord):
                 MelUnion({
                     0: MelBase(b'EPFD', u'param1'),
                     1: MelFloat(b'EPFD', u'param1'),
-                    2: MelStruct(b'EPFD', [u'I', u'f'], u'param1', u'param2'),
+                    2: MelStruct(b'EPFD', [u'I', u'f'], (u'param1', None), u'param2'),
                     # 2: MelUnion({
                     #     (5, 12, 13, 14): MelStruct(b'EPFD', [u'I', u'f'], u'param1',
                     #        u'param2'),
@@ -4082,7 +4082,8 @@ class MreQust(MelRecord):
             MelUInt32Flags(b'FNAM', u'flags', objectiveFlags),
             MelLString(b'NNAM','description'),
             MelGroups('targets',
-                MelStruct(b'QSTA', [u'i', u'B', u'3s'],'alias',(targetFlags,'flags'),'unused1'),
+                      MelStruct(b'QSTA', [u'i', u'B', u'3s'], ('alias', None),
+                                (targetFlags, 'flags'), 'unused1'),
                 MelConditions(),
             ),
         ),
@@ -4109,7 +4110,7 @@ class MreQust(MelRecord):
             ),
             MelGroup('createReferenceToObject',
                 MelFid(b'ALCO','object'),
-                MelStruct(b'ALCA', [u'h', u'H'], 'alias', 'create_target'),
+                MelStruct(b'ALCA', [u'h', u'H'], ('alias', None), 'create_target'),
                 MelUInt32(b'ALCL', 'createLevel'),
             ),
             MelGroup('findMatchingReferenceNearAlias',

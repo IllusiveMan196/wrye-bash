@@ -235,7 +235,7 @@ class MreLand(MelRecord):
     rec_sig = b'LAND'
 
     melSet = MelSet(
-        MelBase(b'DATA', u'unknown'),
+        MelBase(b'DATA', u'unknown_land'),
         MelBase(b'VNML', u'vertex_normals'),
         MelBase(b'VHGT', u'vertex_height_map'),
         MelBase(b'VCLR', u'vertex_colors'),
