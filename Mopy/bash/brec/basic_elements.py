@@ -428,6 +428,14 @@ class MelGroup(MelSequential):
         # set up the MelObject needed for this MelGroup
         from .record_structs import MelSet
         group_mel_set = MelSet(*elements)
+        # def _attr(key):
+        #     return u'%s.%s' % (self.attr, key) if self.attr else key
+        # # mel_set_instance.mel_providers_dict[
+        # #     _attr(self.attr)] = self._mel_object_type
+        # for k, v in group_mel_set.mel_providers_dict.items():
+        #     del group_mel_set.mel_providers_dict[k]
+        #     group_mel_set.mel_providers_dict[_attr(k)] = v
+        # self.mel_providers = group_mel_set.mel_providers_dict
         class _MelObject(self.__class__._mel_object_base_type):
             __slots__ = tuple(
                 chain(group_mel_set.defaulters, group_mel_set.listers,
@@ -458,6 +466,25 @@ class MelGroup(MelSequential):
             (may contain dots)."""
         if not mel_key:
             mel_set_instance.mel_providers_dict[self.attr] = self._mel_object_type
+            # # we are a top-level group so we need to directly set record attrs
+            # defaultrs = mel_set_instance.defaulters
+            # common_attrs = set(self._mel_object_type.mel_set_obj.defaulters) & set(
+            #     defaultrs)
+            # if common_attrs:
+            #     dups = set((a, defaultrs[a],
+            #                 self._mel_object_type.mel_set_obj.defaulters[a]) for a
+            #                in common_attrs if defaultrs[a] !=
+            #                self._mel_object_type.mel_set_obj.defaulters[a])
+            #     if dups:
+            #         raise SyntaxError(u'%s duplicate attr(s) %s' % (self, dups))
+            # defaultrs.update(self._mel_object_type.mel_set_obj.defaulters)
+            # common_listers = mel_set_instance.listers & \
+            #                  self._mel_object_type.mel_set_obj.listers
+            # if common_listers:
+            #     raise SyntaxError(
+            #         u'%s duplicate attr(s) %s' % (self, common_listers))
+            # mel_set_instance.listers.update(
+            #     self._mel_object_type.mel_set_obj.listers)
             for k, v in self._mel_object_type.mel_set_obj.mel_providers_dict.items():
                 mel_set_instance.mel_providers_dict[u'%s.%s' % (self.attr, k)] = v
         else: # we are a MelGroups nested inside a MelGroup inform parent Group

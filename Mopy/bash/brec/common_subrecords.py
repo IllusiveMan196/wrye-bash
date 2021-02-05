@@ -191,6 +191,9 @@ class MelCtda(MelUnion):
     def getSlotsUsed(self):
         return self.decider_result_attr, *self._ctda_mel.getSlotsUsed()
 
+    # def mel_default_value(self): XXX getDefaulters
+    #     self._ctda_mel.mel_default_value()
+
 class MelCtdaFo3(MelCtda):
     """Version of MelCtda that handles the additional complexities that were
     introduced in FO3 (and present in all games after that):

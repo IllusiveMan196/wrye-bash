@@ -109,7 +109,7 @@ class MelObmeScitGroup(MelGroup):
     this group, since '../' syntax is not yet supported (see MrePerk in Skyrim
     for another part of the code that's suffering from this). And we can't
     simply not put this in a group, because a bunch of code relies on a group
-    called 'scriptEffect' existing..."""
+    called 'scriptEffect' existing...""" # TODO (480): rip off
     class _MelHackyObject(MelObject):
         __slots__ = (u'efix_param_info', )
     _mel_object_base_type = _MelHackyObject
