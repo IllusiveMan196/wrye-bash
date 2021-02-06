@@ -2114,7 +2114,7 @@ class _ARP_Subpath(object):
         """:rtype: bool"""
         raise exception.AbstractError(u'rp_exists not implemented')
 
-    def rp_map(self, record, func):
+    def rp_map(self, record, func, *args):
         raise exception.AbstractError(u'rp_map not implemented')
 
 class _RP_Subpath(_ARP_Subpath):
@@ -2130,8 +2130,9 @@ class _RP_Subpath(_ARP_Subpath):
         except AttributeError:
             return False
 
-    def rp_map(self, record, func):
-        self._next_subpath.rp_map(getattr(record, self._subpath_attr), func)
+    def rp_map(self, record, func, *args):
+        self._next_subpath.rp_map(getattr(record, self._subpath_attr), func,
+                                  *args)
 
     def __repr__(self):
         return u'%s.%r' % (self._subpath_attr, self._next_subpath)
@@ -2145,9 +2146,11 @@ class _RP_LeafSubpath(_ARP_Subpath):
     def rp_exists(self, record):
         return getattr(record, self._subpath_attr, None) is not None
 
-    def rp_map(self, record, func):
+    def rp_map(self, record, func, *args):
         s_attr = self._subpath_attr
-        setattr(record, s_attr, func(getattr(record, s_attr)))
+        attr = getattr(record, s_attr)
+        if attr:
+            setattr(record, s_attr, func(*(args + (attr,)))) # Py3: args
 
     def __repr__(self):
         return self._subpath_attr
@@ -2172,10 +2175,10 @@ class _RP_IteratedSubpath(_ARP_Subpath):
                 return True # short-circuit
         return False
 
-    def rp_map(self, record, func):
+    def rp_map(self, record, func, *args):
         map_next = self._next_subpath.rp_map
         for iter_attr in getattr(record, self._subpath_attr):
-            map_next(iter_attr, func)
+            map_next(iter_attr, func, *args)
 
     def __repr__(self):
         return u'%s[i].%r' % (self._subpath_attr, self._next_subpath)
@@ -2194,9 +2197,9 @@ class _RP_OptionalSubpath(_RP_Subpath):
         except AttributeError:
             return [] # Attribute did not exist, rest of the path evals to []
 
-    def rp_map(self, record, func):
+    def rp_map(self, record, func, *args):
         try:
-            super(_RP_OptionalSubpath, self).rp_map(record, func)
+            super(_RP_OptionalSubpath, self).rp_map(record, func, *args)
         except AttributeError:
             pass # Attribute did not exist, can't map any further
 
@@ -2225,11 +2228,11 @@ class RecPath(object):
         for the specified record."""
         return self._root_subpath.rp_exists(record)
 
-    def rp_map(self, record, func):
+    def rp_map(self, record, func, *args):
         """Maps the specified function over all the values that this record
         path points to and assigns the altered values to the corresponding
         attributes on the specified record."""
-        self._root_subpath.rp_map(record, func)
+        self._root_subpath.rp_map(record, func, *args)
 
     def __repr__(self):
         return repr(self._root_subpath)

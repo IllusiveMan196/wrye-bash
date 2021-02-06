@@ -654,7 +654,7 @@ class _ATextReplacer(MultiTweakItem):
         b'INGR': (u'full', u'effects[i].scriptEffect?.full'),
         b'KEYM': (u'full',),
         b'LIGH': (u'full',),
-        b'LSCR': (u'full', u'description'),
+        b'LSCR': (u'full', u'description'), ##: no full in LSCR ??
         b'MGEF': (u'full', u'description'),
         b'MISC': (u'full',),
         b'NPC_': (u'full',),
@@ -696,7 +696,7 @@ class _ATextReplacer(MultiTweakItem):
             return record.eid[0] == u's' and can_change(record.value or u'')
         else:
             for rp in self._match_replace_rpaths[record_sig]: # type: RecPath
-                if not rp.rp_exists(record): continue
+                if not rp.rp_exists(record): continue ##: add except AttributeError in rp_eval
                 for val in rp.rp_eval(record):
                     if can_change(val or u''): return True
             return False
@@ -705,13 +705,8 @@ class _ATextReplacer(MultiTweakItem):
         record_sig = record._rec_sig
         for re_to_match, replacement in self._re_mapping.items():
             replacement_sub = re_to_match.sub
-            def exec_replacement(rec_val):
-                if rec_val: # or blow up on re.sub
-                    return replacement_sub(replacement, rec_val)
-                return rec_val
             for rp in self._match_replace_rpaths[record_sig]: # type: RecPath
-                if rp.rp_exists(record):
-                    rp.rp_map(record, exec_replacement)
+                rp.rp_map(record, replacement_sub, replacement)
 
     def finish_tweaking(self, patch_file):
         # These GMSTs don't exist in Oblivion.esm, so create them in the BP
