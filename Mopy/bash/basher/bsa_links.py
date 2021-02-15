@@ -41,7 +41,7 @@ class BSA_ExtractToProject(ItemLink):
         selected_bsas = [x for x in self.iselected_infos()]
         if len(selected_bsas) == 1:
             bsa_path = selected_bsas[0].abs_path
-            result = self._askText(
+            result = self._askText( # TODO(ut): askFilename
                 _(u'Extract %s to Project:') % bsa_path.tail,
                 default=bsa_path.body.s)
             if not result: return
