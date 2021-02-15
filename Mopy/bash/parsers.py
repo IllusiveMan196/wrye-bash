@@ -1458,9 +1458,8 @@ class SigilStoneDetails(_UsesEffectsMixin):
         uses = _coerce(uses,int)
         value = _coerce(value,int)
         weight = _coerce(weight,float)
-        effects = self.readEffects(csv_fields[12:])
         self.fid_stats[mid] = [eid, full, modPath, modb, iconPath, sid, uses,
-                               value, weight, effects]
+                               value,weight,self.readEffects(csv_fields[12:])]
 
     def _write_rows(self, out):
         """Exports stats to specified text file."""
@@ -1539,6 +1538,7 @@ class ItemPrices(_HandleAliases):
                     tuple(fid_stats[fid]) + (top_grup_sig.decode(u'ascii'),)))
 
 #------------------------------------------------------------------------------
+_to_bool = lambda x: _coerce(x, bool)
 class SpellRecords(_UsesEffectsMixin):
     """Statistics for spells, with functions for importing/exporting from/to
     mod/text file."""
@@ -1657,14 +1657,8 @@ class SpellRecords(_UsesEffectsMixin):
         with _CsvReader(textPath) as ins:
             for fields in ins:
                 if len(fields) < 8 or fields[2][:2] != u'0x': continue
-                if isinstance(fields[4], unicode): # Index 4 was FULL
-                    group, mmod, mobj, eid, _full, cost, levelType, \
-                    spellType = fields[:8]# FULL was dropped and flags added
-                    spell_flags = 0
-                else:
-                    group, mmod, mobj, eid, cost, levelType, spell_flags = \
-                        fields[:8]
-                fields = fields[8:]
+                group, mmod, mobj, eid, cost, levelType, spellType, \
+                    spell_flags = fields[:8]
                 if group.lower() != u'spel': continue
                 mid = self._coerce_fid(mmod, mobj)
                 eid = _unicode_or_none(eid)
@@ -1672,29 +1666,21 @@ class SpellRecords(_UsesEffectsMixin):
                 levelType = levelTypeName_Number.get(levelType.lower(),
                                                      _coerce(levelType,
                                                              int) or 0)
-                spellType = _coerce(spellType, unicode)
                 spellType = spellTypeName_Number.get(spellType.lower(),
                                                      _coerce(spellType,
                                                              int) or 0)
                 ##: HACK, 'flags' needs to be a Flags instance on dump
                 spell_flags = bush.game_mod.records.MreSpel._SpellFlags(
                     _coerce(spell_flags, int))
+                fields = fields[8:]
                 if not detailed or len(fields) < 7:
                     fid_stats[mid] = [eid, cost, levelType, spellType,
                                       spell_flags]
                     continue
-                mc,ss,its,aeil,saa,daar,tewt = fields[:7]
-                fields = fields[7:]
-                mc = _coerce(mc, bool)
-                ss = _coerce(ss, bool)
-                its = _coerce(its, bool)
-                aeil = _coerce(aeil, bool)
-                saa = _coerce(saa, bool)
-                daar = _coerce(daar, bool)
-                tewt = _coerce(tewt, bool)
-                effects = self.readEffects(fields)
+                mc, ss, its, aeil, saa, daar, tewt = map(_to_bool, fields[:7])
                 fid_stats[mid] = [eid, cost, levelType, spellType, spell_flags,
-                                  mc, ss, its, aeil, saa, daar, tewt, effects]
+                                  mc, ss, its, aeil, saa, daar, tewt,
+                                  self.readEffects(fields[7:])]
 
     @property
     def _csv_header(self):
@@ -1850,9 +1836,8 @@ class IngredientDetails(_UsesEffectsMixin):
         iconPath = _unicode_or_none(iconPath)
         value = _coerce(value, int)
         weight = _coerce(weight, float)
-        effects = self.readEffects(csv_fields[11:])
-        self.fid_stats[mid] = [eid,full, modPath, modb, iconPath, sid, value,
-                               weight, effects]
+        self.fid_stats[mid] = [eid, full, modPath, modb, iconPath, sid, value,
+                               weight, self.readEffects(csv_fields[11:])]
 
     def _write_rows(self, out):
         """Exports stats to specified text file."""
