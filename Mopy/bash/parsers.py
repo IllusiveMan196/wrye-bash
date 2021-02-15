@@ -1649,38 +1649,28 @@ class SpellRecords(_UsesEffectsMixin):
         if changed: modFile.safeSave()
         return changed
 
-    def readFromText(self,textPath):
+    def _parse_line(self, fields):
         """Imports stats from specified text file."""
-        detailed, spellTypeName_Number, levelTypeName_Number = \
-            self.detailed, self.spellTypeName_Number, self.levelTypeName_Number
-        fid_stats = self.fid_stats
-        with _CsvReader(textPath) as ins:
-            for fields in ins:
-                if len(fields) < 8 or fields[2][:2] != u'0x': continue
-                group, mmod, mobj, eid, cost, levelType, spellType, \
-                    spell_flags = fields[:8]
-                if group.lower() != u'spel': continue
-                mid = self._coerce_fid(mmod, mobj)
-                eid = _unicode_or_none(eid)
-                cost = _coerce(cost, int)
-                levelType = levelTypeName_Number.get(levelType.lower(),
-                                                     _coerce(levelType,
-                                                             int) or 0)
-                spellType = spellTypeName_Number.get(spellType.lower(),
-                                                     _coerce(spellType,
-                                                             int) or 0)
-                ##: HACK, 'flags' needs to be a Flags instance on dump
-                spell_flags = bush.game_mod.records.MreSpel._SpellFlags(
-                    _coerce(spell_flags, int))
-                fields = fields[8:]
-                if not detailed or len(fields) < 7:
-                    fid_stats[mid] = [eid, cost, levelType, spellType,
-                                      spell_flags]
-                    continue
-                mc, ss, its, aeil, saa, daar, tewt = map(_to_bool, fields[:7])
-                fid_stats[mid] = [eid, cost, levelType, spellType, spell_flags,
-                                  mc, ss, its, aeil, saa, daar, tewt,
-                                  self.readEffects(fields[7:])]
+        group, mmod, mobj, eid, cost, levelType, spellType, spell_flags = \
+            fields[:8]
+        if group.lower() != u'spel': return
+        mid = self._coerce_fid(mmod, mobj)
+        eid = _unicode_or_none(eid)
+        cost = _coerce(cost, int)
+        levelType = self.levelTypeName_Number.get(levelType.lower(),
+                                                  _coerce(levelType, int))
+        spellType = self.spellTypeName_Number.get(spellType.lower(),
+                                                  _coerce(spellType, int))
+        ##: HACK, 'flags' needs to be a Flags instance on dump
+        spell_flags = bush.game_mod.records.MreSpel._SpellFlags(
+            _coerce(spell_flags, int))
+        self.fid_stats[mid] = [eid, cost, levelType, spellType, spell_flags]
+        fields = fields[8:]
+        if not self.detailed or len(fields) < 7:
+            return
+        mc, ss, its, aeil, saa, daar, tewt = map(_to_bool, fields[:7])
+        self.fid_stats[mid].extend(
+            [mc, ss, its, aeil, saa, daar, tewt, self.readEffects(fields[7:])])
 
     @property
     def _csv_header(self):
