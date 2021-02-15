@@ -70,7 +70,16 @@ def _coerce(value, newtype, base=None, AllowNone=False):
             return None
         return retValue
     except (ValueError,TypeError):
-        if newtype is int: return 0
+        if newtype is int and not AllowNone: return 0
+        return None
+
+def _unicode_or_none(uni_str):
+    return None if uni_str.lower() == u'none' else uni_str
+
+def _int_or_none(uni_str):
+    try:
+        return int(uni_str)
+    except ValueError:
         return None
 
 class _CsvReader(object):
@@ -695,7 +704,7 @@ class EditorIds(_HandleAliases):
                     __reGoodEid=re.compile(u'^[a-zA-Z]')):
         top_grup, mod, objectIndex, eid = csv_fields[:4]  ##: debug: top_grup??
         longid = self._coerce_fid(mod, objectIndex)
-        eid = _coerce(eid, unicode, AllowNone=True)
+        eid = _unicode_or_none(eid)
         if not __reValidEid.match(eid):
             if self.badEidsList is not None:
                 self.badEidsList.append(eid)
@@ -797,8 +806,8 @@ class FidReplacer(_HandleAliases):
         oldMod, oldObj, oldEid, newEid, newMod, newObj = csv_fields[1:7]
         oldId = self._coerce_fid(oldMod, oldObj)
         newId = self._coerce_fid(newMod, newObj)
-        oldEid = _coerce(oldEid, unicode, AllowNone=True)
-        newEid = _coerce(newEid, unicode, AllowNone=True)
+        oldEid = _unicode_or_none(oldEid)
+        newEid = _unicode_or_none(newEid)
         self.old_new[oldId] = newId
         self.old_eid[oldId] = oldEid
         self.new_eid[newId] = newEid
@@ -894,8 +903,8 @@ class FullNames(_HandleAliases):
     def _parse_line(self, csv_fields):
         top_grup, mod, objectIndex, eid, full = csv_fields[:5]
         longid = self._coerce_fid(mod, objectIndex)
-        eid = _coerce(eid, unicode, AllowNone=True)
-        full = _coerce(full, unicode, AllowNone=True)
+        eid = _unicode_or_none(eid)
+        full = _unicode_or_none(full)
         self.type_id_name[top_grup.encode(u'ascii')][longid] = (eid, full)
 
     def _write_rows(self, out):
@@ -913,7 +922,7 @@ class ItemStats(_HandleAliases):
 
     @staticmethod
     def sstr(value):
-        return _coerce(value, unicode, AllowNone=True)
+        return _unicode_or_none(value)
 
     @staticmethod
     def sfloat(value):
@@ -921,7 +930,7 @@ class ItemStats(_HandleAliases):
 
     @staticmethod
     def sint(value):
-        return _coerce(value, int, AllowNone=False)
+        return _coerce(value, int)
 
     @staticmethod
     def snoneint(value):
@@ -1269,18 +1278,17 @@ class _UsesEffectsMixin(_HandleAliases):
         while len(_effects) >= 13:
             _effect,_effects = _effects[1:13],_effects[13:]
             eff_name,magnitude,area,duration,range_,actorvalue,semod,seobj,\
-            seschool,sevisual,seflags,sename = tuple(_effect)
-            eff_name = _coerce(eff_name,unicode,AllowNone=True) #OBME not supported
+            seschool,sevisual,seflags,sename = _effect
+            eff_name = _unicode_or_none(eff_name) #OBME not supported
             # (support requires adding a mod/objectid format to the
             # csv, this assumes all MGEFCodes are raw)
-            magnitude = _coerce(magnitude,int,AllowNone=True)
-            area = _coerce(area,int,AllowNone=True)
-            duration = _coerce(duration,int,AllowNone=True)
-            range_ = _coerce(range_,unicode,AllowNone=True)
+            magnitude, area, duration = map(_int_or_none,
+                                            (magnitude, area, duration))
+            range_ = _unicode_or_none(range_)
             if range_:
                 range_ = recipientTypeName_Number.get(range_.lower(),
                                                       _coerce(range_,int))
-            actorvalue = _coerce(actorvalue, unicode, AllowNone=True)
+            actorvalue = _unicode_or_none(actorvalue)
             if actorvalue:
                 actorvalue = actorValueName_Number.get(actorvalue.lower(),
                                                        _coerce(actorvalue,int))
@@ -1289,7 +1297,7 @@ class _UsesEffectsMixin(_HandleAliases):
             effect = [eff_name,magnitude,area,duration,range_,actorvalue]
             semod = _coerce(semod, unicode, AllowNone=True)
             seobj = _coerce(seobj, int, 16, AllowNone=True)
-            seschool = _coerce(seschool, unicode, AllowNone=True)
+            seschool = _unicode_or_none(seschool)
             if seschool:
                 seschool = schoolTypeName_Number.get(seschool.lower(),
                                                      _coerce(seschool,int))
@@ -1297,7 +1305,7 @@ class _UsesEffectsMixin(_HandleAliases):
             # supported (support requires adding a mod/objectid format to
             # the csv, this assumes visual MGEFCode is raw)
             if sevisuals is None:
-                sevisuals = _coerce(sevisual, unicode, AllowNone=True)
+                sevisuals = _unicode_or_none(sevisual)
             else:
                 sevisuals = ctypes.cast(ctypes.byref(ctypes.c_ulong(sevisuals))
                     ,ctypes.POINTER(ctypes.c_char * 4)).contents.value
@@ -1305,7 +1313,7 @@ class _UsesEffectsMixin(_HandleAliases):
                 sevisuals = u'\x00\x00\x00\x00'
             sevisual = sevisuals
             seflags = _coerce(seflags, int, AllowNone=True)
-            sename = _coerce(sename, unicode, AllowNone=True)
+            sename = _unicode_or_none(sename)
             if None in (semod,seobj,seschool,sevisual,seflags,sename):
                 effect.append([])
             else:
@@ -1439,14 +1447,14 @@ class SigilStoneDetails(_UsesEffectsMixin):
         mmod, mobj, eid, full, modPath, modb, iconPath, smod, sobj, uses, \
             value, weight = csv_fields[:12]
         mid = self._coerce_fid(mmod, mobj)
-        smod = _coerce(smod,unicode,AllowNone=True)
+        smod = _unicode_or_none(smod)
         if smod is None: sid = None
         else: sid = self._coerce_fid(smod, sobj)
-        eid = _coerce(eid,unicode,AllowNone=True)
-        full = _coerce(full,unicode,AllowNone=True)
-        modPath = _coerce(modPath,unicode,AllowNone=True)
+        eid = _unicode_or_none(eid)
+        full = _unicode_or_none(full)
+        modPath = _unicode_or_none(modPath)
         modb = _coerce(modb,float)
-        iconPath = _coerce(iconPath,unicode,AllowNone=True)
+        iconPath = _unicode_or_none(iconPath)
         uses = _coerce(uses,int)
         value = _coerce(value,int)
         weight = _coerce(weight,float)
@@ -1516,9 +1524,8 @@ class ItemPrices(_HandleAliases):
         mmod, mobj, value, eid, itm_name, top_grup = csv_fields[:6]
         longid = self._coerce_fid(mmod, mobj)
         value = _coerce(value, int)
-        eid = _coerce(eid, unicode, AllowNone=True)
-        itm_name = _coerce(itm_name, unicode, AllowNone=True)
-        top_grup = _coerce(top_grup, unicode)
+        eid = _unicode_or_none(eid)
+        itm_name = _unicode_or_none(itm_name)
         self.class_fid_stats[top_grup.encode(u'ascii')][longid] = [value, eid,
                                                                    itm_name]
 
@@ -1660,9 +1667,8 @@ class SpellRecords(_UsesEffectsMixin):
                 fields = fields[8:]
                 if group.lower() != u'spel': continue
                 mid = self._coerce_fid(mmod, mobj)
-                eid = _coerce(eid, unicode, AllowNone=True)
+                eid = _unicode_or_none(eid)
                 cost = _coerce(cost, int)
-                levelType = _coerce(levelType, unicode)
                 levelType = levelTypeName_Number.get(levelType.lower(),
                                                      _coerce(levelType,
                                                              int) or 0)
@@ -1834,14 +1840,14 @@ class IngredientDetails(_UsesEffectsMixin):
         mmod, mobj, eid, full, modPath, modb, iconPath, smod, sobj, value,\
         weight = csv_fields[:11]
         mid = self._coerce_fid(mmod, mobj)
-        smod = _coerce(smod, unicode, AllowNone=True)
+        smod = _unicode_or_none(smod)
         if smod is None: sid = None
         else: sid = self._coerce_fid(smod, sobj)
-        eid = _coerce(eid, unicode, AllowNone=True)
-        full = _coerce(full, unicode, AllowNone=True)
-        modPath = _coerce(modPath, unicode, AllowNone=True)
+        eid = _unicode_or_none(eid)
+        full = _unicode_or_none(full)
+        modPath = _unicode_or_none(modPath)
         modb = _coerce(modb, float)
-        iconPath = _coerce(iconPath, unicode, AllowNone=True)
+        iconPath = _unicode_or_none(iconPath)
         value = _coerce(value, int)
         weight = _coerce(weight, float)
         effects = self.readEffects(csv_fields[11:])
