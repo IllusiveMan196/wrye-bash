@@ -62,7 +62,7 @@ class Screens_NextScreenShot(EnabledLink):
         enabled_key = bush.game.Ini.screenshot_enabled_key
         base = bosh.oblivionIni.getSetting(*base_key)
         index = bosh.oblivionIni.getSetting(*index_key)
-        pattern = self._askText(
+        pattern = self._askText(  # TODO(ut): askFilename (although the \\ will need special treatment)
             _(u'Screenshot base name, optionally with next screenshot number.')
             + u'\n' +
             _(u'E.g. ScreenShot, ScreenShot_101 or Subdir\\ScreenShot_201.'),
