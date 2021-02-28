@@ -1282,8 +1282,8 @@ class _UsesEffectsMixin(_HandleAliases):
             eff_name = _unicode_or_none(eff_name) #OBME not supported
             # (support requires adding a mod/objectid format to the
             # csv, this assumes all MGEFCodes are raw)
-            magnitude, area, duration = map(_int_or_none,
-                                            (magnitude, area, duration))
+            magnitude, area, duration = [_int_or_none(x) for x in
+                                         (magnitude, area, duration)]
             range_ = _unicode_or_none(range_)
             if range_:
                 range_ = recipientTypeName_Number.get(range_.lower(),
@@ -1668,7 +1668,7 @@ class SpellRecords(_UsesEffectsMixin):
         fields = fields[8:]
         if not self.detailed or len(fields) < 7:
             return
-        mc, ss, its, aeil, saa, daar, tewt = map(_to_bool, fields[:7])
+        mc, ss, its, aeil, saa, daar, tewt = [_to_bool(f) for f in fields[:7]]
         self.fid_stats[mid].extend(
             [mc, ss, its, aeil, saa, daar, tewt, self.readEffects(fields[7:])])
 
