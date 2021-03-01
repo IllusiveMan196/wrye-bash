@@ -16,7 +16,7 @@ from collections import defaultdict
 # This is the worst regex I've ever written. It's basically just hacks to allow
 # this script to even parse certain WB files
 OTHER_PREFIX_REGEX = re.compile(
-    r"\b(b|r)('|\")(?!\)|}|,|:| (?:\+|%)| in )(?=.)")
+    r"\b(b|r)('|\")(?!\)|]|}|,|:| (?:\+|%)| in )(?=.)")
 CODING_REGEX = re.compile(u'# ?-\*- coding: ?utf-8 -\*-')
 DOCSTRING_REGEX = re.compile(r'^([ ]*)(r?""")(.*)')
 DOCSTRING_REGEX_END = re.compile(r'"""([ ]*#.*)?$')
