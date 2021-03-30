@@ -48,7 +48,7 @@ from itertools import chain
 from keyword import iskeyword
 from operator import attrgetter
 from urllib.parse import quote
-from contextlib import contextmanager
+from contextlib import contextmanager, redirect_stdout
 
 import chardet
 
@@ -1828,20 +1828,15 @@ def deprint(*args,**keyargs):
         print(msg.encode(Path.sys_fs_enc))
 
 @contextmanager
-def redirect_stdout_to_deprint(use_bytes=True): # PY3: redirect_stdout
-    old_stdout = sys.stdout
-    io_type = (io.StringIO, io.BytesIO)[use_bytes]
-    with io_type() as io_stream:
-        sys.stdout = io_stream
-        try:
-            yield
-        finally:
-            sys.stdout = old_stdout
-            # 1 = this function's frame
-            # 2 = @contextmanager's frame
-            # 3 = caller's frame
-            # rstrip to remove newlines due to using io.<*>IO
-            deprint(io_stream.getvalue().rstrip(), frame=3)
+def redirect_stdout_to_deprint(use_bytes=False):
+    io_stream = (io.StringIO, io.BytesIO)[use_bytes]()
+    with redirect_stdout(io_stream):
+        yield
+    # 1 = this function's frame
+    # 2 = @contextmanager's frame
+    # 3 = caller's frame
+    # rstrip to remove newlines due to using io.<*>IO
+    deprint(io_stream.getvalue().rstrip(), frame=3)
 
 def getMatch(reMatch,group=0):
     """Returns the match or an empty string."""

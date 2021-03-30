@@ -32,9 +32,7 @@ except ImportError:
     _wx_html2 = None
 # Try to import the PDF viewer, may not be available everywhere
 try:
-    # wx.lib.pdfviewer uses a raw print statment, UGH!.  We cannot directly
-    # override this on Python 2, so instead redirect stdout temporarily to
-    # our deprint
+    # wx.lib.pdfviewer uses a raw print statment, UGH!
     from ..bolt import redirect_stdout_to_deprint
     with redirect_stdout_to_deprint():
         from wx.lib.pdfviewer import pdfViewer as _PdfViewer
