@@ -446,7 +446,6 @@ def check_timestamp(build_version):
         nightly_version = nightly_version.group(0)
         previous_version = previous_version.group(0)
         if nightly_version == previous_version:
-            # PY3: raw_input -> input
             answer = input(
                 u'Current timestamp is equal to the previous build. Continue? [y/N]\n> '
             )
