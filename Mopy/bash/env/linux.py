@@ -102,8 +102,9 @@ def getJava(): # PY3: cache this
     except KeyError: # no JAVA_HOME
         pass
     try:
-        binary_path = subprocess.check_output(u'command -v java', shell=True)
-        java_bin_path = binary_path.decode(Path.sys_fs_enc).rstrip(u'\n')
+        java_bin_path = subprocess.check_output(
+            u'command -v java', shell=True,
+            encoding=Path.sys_fs_enc).rstrip(u'\n')
     except subprocess.CalledProcessError:
         # Fall back to the likely correct path on most distros - but probably
         # Java is missing entirely if command can't find it
