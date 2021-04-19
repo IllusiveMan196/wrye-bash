@@ -309,7 +309,8 @@ def format_date(secs): # type: (float) -> unicode
     :param secs: Formats the specified number of seconds into a string."""
     try:
         local = time.localtime(secs)
-    except ValueError: # local time in windows can't handle negative values
+    except (OSError, ValueError):
+        # local time in windows can't handle negative values
         local = time.gmtime(secs)
     return bolt.decoder(time.strftime(u'%c', local), ##: decoder?
                         locale.getpreferredencoding(do_setlocale=False))
