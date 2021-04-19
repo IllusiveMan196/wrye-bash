@@ -1351,7 +1351,7 @@ class InstallerArchive(Installer):
             __slots__ = ()
         def _parse_archive_line(key, value):
             if   key == u'Solid': self.isSolid = (value[0] == u'+')
-            elif key == u'Path': _li.filepath = value.decode(u'utf8')
+            elif key == u'Path': _li.filepath = value
             elif key == u'Size': _li.size = int(value)
             elif key == u'Attributes': _li.isdir = value and (u'D' in value)
             elif key == u'CRC' and value: _li.crc = int(value,16)
@@ -1444,7 +1444,7 @@ class InstallerArchive(Installer):
             list_text = []
             def _parse_archive_line(key, value):
                 if key == u'Path':
-                    filepath[0] = value.decode('utf8')
+                    filepath[0] = value
                 elif key == u'Attributes':
                     list_text.append( # attributes may be empty
                         (u'%s' % filepath[0], value and (u'D' in value)))
