@@ -24,7 +24,6 @@
 
 import collections
 import copy
-import errno
 import io
 import os
 import re
@@ -2149,9 +2148,8 @@ class InstallersData(DataStore):
                         pending_size += size
                     else:
                         new_sizeCrcDate[rpFile] = (oSize, oCrc, oDate, asFile)
-                except OSError as e:
-                    if e.errno == errno.ENOENT: continue # file does not exist
-                    raise
+                except FileNotFoundError:
+                    continue # file does not exist
         return new_sizeCrcDate, pending, pending_size
 
     def reset_refresh_flag_on_projects(self):

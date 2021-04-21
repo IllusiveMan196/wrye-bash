@@ -29,11 +29,9 @@ load_order.py."""
 
 __author__ = u'Utumno'
 
-import errno
 import re
 import time
 from collections import defaultdict, OrderedDict
-
 
 # Local
 from . import bass, bolt, env, exception
@@ -1319,8 +1317,8 @@ class AsteriskGame(Game):
                                      % ccc_line)
                         continue
                 cls.must_be_active_if_present += tuple(ccc_contents)
-        except (OSError) as e:
-            if e.errno != errno.ENOENT:
+        except OSError as e:
+            if not isinstance(e, FileNotFoundError):
                 bolt.deprint(u'Failed to open %s' % ccc_path, traceback=True)
             bolt.deprint(u'%s does not exist or could not be read, falling '
                          u'back to hardcoded CCC list' % cls._ccc_filename)

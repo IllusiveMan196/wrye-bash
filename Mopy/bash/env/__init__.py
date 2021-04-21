@@ -94,7 +94,7 @@ def __copyOrMove(operation, source, target, renameOnCollision, parent):
             # overwrite as needed
             try:
                 shutil.copy2(fileFrom.s, fileTo.s)
-            except OSError as e:
+            except OSError as e: ## TODO FileNotFoundError ??
                 if e.errno != errno.ENOENT: raise
                 # probably directory path does not exist, create it.
                 fileTo.head.makedirs()
