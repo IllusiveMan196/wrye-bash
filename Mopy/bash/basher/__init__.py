@@ -51,8 +51,6 @@ has its own data store)."""
 
 # Imports ---------------------------------------------------------------------
 #--Python
-
-
 import collections
 import io
 import os
@@ -60,7 +58,7 @@ import sys
 import time
 from collections import OrderedDict, namedtuple, defaultdict
 from functools import partial, reduce
-
+from typing import Optional
 
 #--wxPython
 import wx
@@ -101,26 +99,12 @@ except ImportError:
     deprint(u'Error initializing installer wizards:', traceback=True)
 
 #  - Make sure that python root directory is in PATH, so can access dll's.
-# NOTE: See:
-# https://docs.python.org/3/library/os.html#file-names-command-line-arguments-and-environment-variables
-# and here:
-# https://docs.python.org/2.7/library/os.html#os.environ
-# It's not obvious from the 2.7 version, but environment variables
-# are bytes encoded using the filesystem encoding.  On Python 3, these are
-# actually unicode and encoded/decoded using the file system encoding.
-# We now automatically handle encoding/decoding of values, but
-# on Python 2 sys.prefix is still a bytes object.
-# PY3: Remove the version used for python 2.7
-if sys.version_info >= (3,0):
-    _prefix = sys.prefix
-else:
-    _prefix = sys.prefix.decode(bolt.Path.sys_fs_enc)
-_env_path = env.get_env_var(u'PATH')
+_env_path = os.environ[u'PATH']
 if sys.prefix not in set(_env_path.split(u';')):
-    env.set_env_var(u'PATH', _env_path + u';' + _prefix)
+    os.environ[u'PATH'] = _env_path + u';' + sys.prefix
 
 # Settings --------------------------------------------------------------------
-settings = None # type: bolt.Settings
+settings = None # type: Optional[bolt.Settings]
 
 # Utils
 def configIsCBash(patchConfigs):

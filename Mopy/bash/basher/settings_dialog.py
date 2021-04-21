@@ -445,7 +445,7 @@ class ConfigureEditorDialog(DialogWindow):
         # Don't use mustExist, we want to show an error message for that below
         chosen_editor = FileOpen.display_dialog(self,
             title=_(u'Choose Editor'),
-            defaultDir=env.get_env_var(u'ProgramFiles', u''),
+            defaultDir=os.environ.get(u'ProgramFiles', u''),
             wildcard=u'*.exe')
         if chosen_editor:
             self._editor_location.text_content = chosen_editor.s

@@ -40,7 +40,7 @@ import win32gui
 
 from ..bolt import GPath, deprint, Path
 from ..exception import AccessDeniedError, BoltError, NonExistentDriveError
-from .common import get_env_var, WinAppInfo, WinAppVersionInfo
+from .common import WinAppInfo, WinAppVersionInfo
 
 # API - Constants =============================================================
 _isUAC = False
@@ -70,7 +70,7 @@ def _subEnv(match):
     env_var = match.group(1).upper()
     # NOTE: On Python 3, this would be better as a try...except KeyError,
     # then raise BoltError(...) from None
-    env_val = get_env_var(env_var, None)
+    env_val = os.environ.get(env_var, None)
     if not env_val:
         raise BoltError(u"Can't find user directories in windows registry."
             u'\n>> See "If Bash Won\'t Start" in bash docs for help.')
@@ -122,7 +122,7 @@ def _get_default_app_icon(idex, target):
             icon = os.path.expandvars(icon)
         if not os.path.isabs(icon):
             # Get the correct path to the dll
-            for dir_ in get_env_var(u'PATH').split(u';'):
+            for dir_ in os.environ[u'PATH'].split(u';'):
                 test = os.path.join(dir_, icon)
                 if os.path.exists(test):
                     icon = test
@@ -924,12 +924,12 @@ def setUAC(handle, uac=True):
 def getJava(): # PY3: cache this
     """Locate javaw.exe to launch jars from Bash."""
     try:
-        java_home = GPath(get_env_var(u'JAVA_HOME'))
+        java_home = GPath(os.environ[u'JAVA_HOME'])
         java_bin_path = java_home.join(u'bin', u'javaw.exe')
         if java_bin_path.isfile(): return java_bin_path
     except KeyError: # no JAVA_HOME
         pass
-    sys_root = GPath(get_env_var(u'SYSTEMROOT'))
+    sys_root = GPath(os.environ[u'SYSTEMROOT'])
     # Default location: Windows\System32\javaw.exe
     java_bin_path = sys_root.join(u'system32', u'javaw.exe')
     if not java_bin_path.isfile():
