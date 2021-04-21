@@ -26,9 +26,9 @@ import os
 import subprocess
 import sys
 
-from ..bolt import deprint, GPath, structs_cache, Path
+from .common import WinAppInfo
+from ..bolt import deprint, GPath, structs_cache, Path, dict_sort
 from ..exception import EnvError
-from .common import get_env_var, iter_env_vars, WinAppInfo
 
 # API - Constants =============================================================
 try:
@@ -57,8 +57,7 @@ def _getShellPath(folderKey): ##: mkdirs
                   u'Local AppData': home + u'/.local/share'}[folderKey])
 
 def _get_error_info():
-    return u'\n'.join(u'  %s: %s' % (key, get_env_var(key))
-                      for key in sorted(iter_env_vars()))
+    return '\n'.join(f'  {k}: {v}' for k, v in dict_sort(os.environ))
 
 # API - Functions =============================================================
 ##: Several of these should probably raise instead
@@ -96,7 +95,7 @@ def is_uac():
 
 def getJava(): # PY3: cache this
     try:
-        java_home = GPath(get_env_var(u'JAVA_HOME'))
+        java_home = GPath(os.environ[u'JAVA_HOME'])
         java_bin_path = java_home.join(u'bin', u'java')
         if java_bin_path.isfile(): return java_bin_path
     except KeyError: # no JAVA_HOME

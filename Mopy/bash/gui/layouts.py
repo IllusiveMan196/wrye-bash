@@ -123,8 +123,8 @@ class LayoutOptions(object):
 class _ALayout(object):
     """Abstract base class for all layouts."""
 
-    def __init__(self, sizer, border=0, item_border=0, item_expand=False,
-                 item_h_align=None, item_v_align=None): # PY3: require kwargs (,*,)
+    def __init__(self, sizer, *, border=0, item_border=0, item_expand=False,
+                 item_h_align=None, item_v_align=None):
         """Initiate the layout.
         The item_* arguments are for when those options are not provided
         when adding an item. See LayoutOptions for more information.
