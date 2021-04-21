@@ -737,8 +737,7 @@ class Path(object):
         """For directory: Returns list of files."""
         try:
             return [GPath_no_norm(x) for x in os.listdir(self._s)]
-        except OSError as e:
-            if e.errno != errno.ENOENT: raise
+        except FileNotFoundError:
             return []
 
     def walk(self,topdown=True,onerror=None,relative=False):
@@ -807,11 +806,8 @@ class Path(object):
             os.makedirs(self.shead)
         return io.open(self._s, *args, **kwdargs)
     def makedirs(self):
-        try:
-            os.makedirs(self._s)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
+        os.makedirs(self._s, exist_ok=True)
+
     def remove(self):
         try:
             if self.exists(): os.remove(self._s)

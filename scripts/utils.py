@@ -21,10 +21,6 @@
 #  https://github.com/wrye-bash
 #
 # =============================================================================
-
-
-
-import errno
 import logging
 import math
 import os
@@ -129,13 +125,3 @@ def suppress(*exceptions):
         yield
     except exceptions:
         pass
-
-# https://stackoverflow.com/questions/600268/mkdir-p-functionality-in-python
-def mkdir(path, exists_ok=True):
-    try:
-        os.makedirs(path)
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(path) and exists_ok:
-            pass
-        else:
-            raise

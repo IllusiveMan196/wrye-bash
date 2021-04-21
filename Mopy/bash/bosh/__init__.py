@@ -1383,9 +1383,8 @@ class SaveInfo(FileInfo):
         :rtype: cosaves.ACosave | None"""
         try:
             return co_type(co_path)
-        except (OSError, IOError, FileError) as e: #PY3: FileNotFoundError
-            if isinstance(e, FileError) or (isinstance(e, (
-                    OSError, IOError)) and e.errno != errno.ENOENT):
+        except (OSError, FileError) as e:
+            if not isinstance(e, FileNotFoundError):
                 deprint(u'Failed to open %s' % co_path, traceback=True)
             return None
 

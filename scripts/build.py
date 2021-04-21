@@ -486,7 +486,7 @@ def main(args):
         # Get repository files
         version_info = get_version_info(args.version)
         # create distributable directory
-        utils.mkdir(DIST_PATH, exists_ok=True)
+        os.makedirs(DIST_PATH, exist_ok=True)
         # Copy the license so it's included in the built releases
         license_real = os.path.join(ROOT_PATH, u'LICENSE.md')
         license_temp = os.path.join(MOPY_PATH, u'LICENSE.md')
