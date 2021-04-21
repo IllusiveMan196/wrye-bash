@@ -166,7 +166,7 @@ def _fn_checksum(file_path, expected_crc):
     :param expected_crc: The expected CRC32 value."""
     try:
         return _process_path(file_path).crc == expected_crc
-    except IOError:
+    except OSError:
         return False # Doesn't exist or is a directory
 
 def _fn_file(path_or_regex):

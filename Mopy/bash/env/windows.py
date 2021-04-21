@@ -353,7 +353,7 @@ class _WindowsStoreFinder(object):
             entry = root.find(entry_template % (namespace, namespace))
             if entry is not None:
                 entry_point = entry.get(u'Id')
-        except (xml.ParseError, IOError):
+        except (xml.ParseError, OSError):
             # Parsing error, or the file doesn't exist
             pass
         return version, entry_point

@@ -123,7 +123,7 @@ class IniFile(AFile):
                     self.isCorrupted = (_(u'Your %s seems to have unencodable '
                         u'characters:') + u'\n\n%s') % (self.abs_path, e)
                     return ({}, {}) if with_deleted else {}
-        except (OSError, IOError):
+        except OSError:
             return ({}, {}) if with_deleted else {}
         if with_deleted:
             return self._ci_settings_cache_linenum, self._deleted_cache
@@ -136,7 +136,7 @@ class IniFile(AFile):
             if self._deleted: # restored
                 self._deleted = False
             return self.updated
-        except (OSError, IOError):
+        except OSError:
             # check if we already know it's deleted (used for main game ini)
             update = not self._deleted
             if update:

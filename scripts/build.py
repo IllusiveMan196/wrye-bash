@@ -332,7 +332,7 @@ def pack_installer(nsis_path, version, file_version):
     """ Packages the installer version. """
     script_path = os.path.join(SCRIPTS_PATH, u'build', u'installer', u'main.nsi')
     if not os.path.exists(script_path):
-        raise IOError(
+        raise OSError(
             u"Could not find nsis script '{}', aborting "
             u'installer creation.'.format(script_path)
         )
@@ -340,7 +340,7 @@ def pack_installer(nsis_path, version, file_version):
     download_redists()
     nsis_path = os.path.join(nsis_root, u'makensis.exe')
     if not os.path.isfile(nsis_path):
-        raise IOError(u"Could not find 'makensis.exe', aborting installer creation.")
+        raise OSError(u"Could not find 'makensis.exe', aborting installer creation.")
     # Build the installer
     utils.run_subprocess(
         [
@@ -460,7 +460,7 @@ def taglists_need_update():
     try:
         with open(TAGINFO, u'r') as ins:
             last_ml_ver = ins.read()
-    except (IOError, OSError): pass # we'll have to update
+    except OSError: pass # we'll have to update
     latest_ml_ver = update_taglist.MASTERLIST_VERSION
     if LooseVersion(last_ml_ver) < LooseVersion(latest_ml_ver):
         # LOOT version changed so the syntax probably changed too,

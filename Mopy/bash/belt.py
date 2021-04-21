@@ -730,7 +730,7 @@ class WryeParser(ScriptParser.Parser):
         except UnicodeError:
             return _(u'Could not read the wizard file.  Please ensure it is '
                      u'encoded in UTF-8 format.')
-        except (OSError, IOError):
+        except OSError:
             return _(u'Could not open wizard file')
 
     def _reset_vars(self):

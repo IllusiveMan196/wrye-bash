@@ -712,7 +712,7 @@ class INIList(balt.UIList):
             else:
                 bosh.iniInfos.refresh(refresh_infos=False)
             return True
-        except (OSError, IOError):
+        except OSError:
             error_msg = u'Failed to copy %s to %s' % (
                 default_ini, target_ini_file.abs_path)
             deprint(error_msg, traceback=True)
@@ -810,7 +810,7 @@ class TargetINILineCtrl(INIListCtrl):
                 Link.Frame.oblivionIniMissing = False
             for i, line in enumerate(sel_ini_lines):
                 self.InsertItem(i, line.rstrip())
-        except IOError:
+        except OSError:
             if main_ini_selected:
                 Link.Frame.oblivionIniMissing = True
         self.fit_column_to_header(0)

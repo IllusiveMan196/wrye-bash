@@ -346,7 +346,7 @@ class RestoreSettings(object):
                     # version of Bash that created the backup
                     self._settings_saved_with = pickle.load(
                         ins, encoding='bytes')
-            except (OSError, IOError, pickle.UnpicklingError, EOFError):
+            except (OSError, pickle.UnpicklingError, EOFError):
                 raise_bolt_error(u'Failed to read %s' % backup_dat)
         return self._saved_settings_version, self._settings_saved_with
 

@@ -44,7 +44,7 @@ def _write_plugins_txt_(path, lord, active, _star):
     try:
         with path.open(u'wb') as out:
             __write_plugins(out, lord, active, _star)
-    except IOError:
+    except OSError:
         env.clear_read_only(path)
         with path.open(u'wb') as out:
             __write_plugins(out, lord, active, _star)
@@ -767,7 +767,7 @@ class INIGame(Game):
             ini_path = self._cached_ini_actives.abs_path
             try:
                 ini_path.copyTo(ini_path.backup)
-            except IOError:
+            except OSError:
                 bolt.deprint(u'Tried to back up %s, but it did not '
                              u'exist' % ini_path)
         else: super(INIGame, self)._backup_active_plugins()
@@ -777,7 +777,7 @@ class INIGame(Game):
             ini_path = self._cached_ini_lo.abs_path
             try:
                 ini_path.copyTo(ini_path.backup)
-            except IOError:
+            except OSError:
                 bolt.deprint(u'Tried to back up %s, but it did not '
                              u'exist' % ini_path)
         else: super(INIGame, self)._backup_load_order()
@@ -936,7 +936,7 @@ class TimestampGame(Game):
     def _backup_active_plugins(self):
         try:
             self.plugins_txt_path.copyTo(self.plugins_txt_path.backup)
-        except IOError:
+        except OSError:
             bolt.deprint(u'Tried to back up %s, but it did not '
                          u'exist' % self.plugins_txt_path)
 
@@ -1071,14 +1071,14 @@ class TextfileGame(Game):
     def _backup_active_plugins(self):
         try:
             self.plugins_txt_path.copyTo(self.plugins_txt_path.backup)
-        except IOError:
+        except OSError:
             bolt.deprint(u'Tried to back up %s, but it did not '
                          u'exist' % self.plugins_txt_path)
 
     def _backup_load_order(self):
         try:
             self.loadorder_txt_path.copyTo(self.loadorder_txt_path.backup)
-        except IOError:
+        except OSError:
             bolt.deprint(u'Tried to back up %s, but it did not '
                          u'exist' % self.loadorder_txt_path)
 
@@ -1229,7 +1229,7 @@ class AsteriskGame(Game):
     def _backup_active_plugins(self):
         try:
             self.plugins_txt_path.copyTo(self.plugins_txt_path.backup)
-        except IOError:
+        except OSError:
             bolt.deprint(u'Tried to back up %s, but it did not '
                          u'exist' % self.plugins_txt_path)
 
@@ -1319,7 +1319,7 @@ class AsteriskGame(Game):
                                      % ccc_line)
                         continue
                 cls.must_be_active_if_present += tuple(ccc_contents)
-        except (OSError, IOError) as e:
+        except (OSError) as e:
             if e.errno != errno.ENOENT:
                 bolt.deprint(u'Failed to open %s' % ccc_path, traceback=True)
             bolt.deprint(u'%s does not exist or could not be read, falling '

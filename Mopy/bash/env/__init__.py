@@ -53,7 +53,7 @@ from ..exception import CancelError, SkipError, AccessDeniedError, \
     DirectoryFileCollisionError, FileOperationError
 
 # NOTE(lojack): AccessDenied can be a result of many error codes,
-# According to 
+# According to
 # https://msdn.microsoft.com/en-us/library/windows/desktop/bb762164%28v=vs.85%29.aspx
 # If you recieve an error code not on that list, then you assume it is one of
 # the default WinError.h error codes, in this case 5 is `ERROR_ACCESS_DENIED`.
@@ -94,7 +94,7 @@ def __copyOrMove(operation, source, target, renameOnCollision, parent):
             # overwrite as needed
             try:
                 shutil.copy2(fileFrom.s, fileTo.s)
-            except IOError as e:
+            except OSError as e:
                 if e.errno != errno.ENOENT: raise
                 # probably directory path does not exist, create it.
                 fileTo.head.makedirs()
