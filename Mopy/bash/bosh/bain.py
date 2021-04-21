@@ -179,7 +179,7 @@ class Installer(ListInfo):
                     for block in iter(partial(ins.read, 2097152), b''):
                         crc = crc32(block, crc) # 2MB at a time, probably ok
                         sub(insTell())
-            except (OSError, IOError):
+            except OSError:
                 deprint(u'Failed to calculate crc for %s - please report '
                         u'this, and the following traceback:' % asFile,
                         traceback=True)

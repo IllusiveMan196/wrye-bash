@@ -78,7 +78,7 @@ class SaveFileHeader(object):
             else:
                 self.load_header(ins, load_image)
         #--Errors
-        except (OSError, IOError, struct_error, OverflowError):
+        except (OSError, struct_error, OverflowError):
             err_msg = u'Failed to read %s' % self._save_info.abs_path
             bolt.deprint(err_msg, traceback=True)
             raise_bolt_error(err_msg, SaveHeaderError)

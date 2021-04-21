@@ -1210,7 +1210,7 @@ class UIList(wx.Panel):
     def _try_rename(self, info, newFileName):
         try:
             return self.data_store.rename_operation(info, newFileName)
-        except (CancelError, OSError, IOError):
+        except (CancelError, OSError):
             deprint(u'Renaming %s to %s failed' % (info, newFileName),
                     traceback=True)
             # When using moveTo I would get "WindowsError:[Error 32]The process
