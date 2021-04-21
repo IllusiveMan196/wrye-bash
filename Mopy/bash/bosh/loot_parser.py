@@ -232,12 +232,6 @@ class LOOTParser(object):
             return ca_tags
 
 # Implementation
-def _loot_decode(raw_str): # PY3: drop entirely, pyyaml is fully unicode on py3
-    """LOOT masterlists are always encoded in UTF-8, but simply opening the
-    file in UTF-8 mode is not enough. PyYAML stores everything it can encode as
-    ASCII as bytestrings, and everything else as unicode. No idea why."""
-    return raw_str if isinstance(raw_str, str) else raw_str.decode(u'utf-8')
-
 class _PluginEntry(object):
     """Represents stored information about a plugin's entry in the LOOT
     masterlist and/or userlist."""
@@ -268,14 +262,13 @@ class _PluginEntry(object):
         for tag in yaml_entry.get(u'tag', ()):
             try:
                 removes = tag[0] == u'-'
-                target_tag = _loot_decode(tag[1:] if removes else tag)
+                target_tag = tag[1:] if removes else tag
             except KeyError:
                 # This is a dict, means we'll have to handle conditions later
                 tag_name = tag[u'name']
                 removes = tag_name[0] == u'-'
                 target_tag = _ConditionalTag(
-                    _loot_decode(tag_name[1:] if removes else tag_name),
-                    _loot_decode(tag[u'condition']))
+                    (tag_name[1:] if removes else tag_name), tag[u'condition'])
             target_set = self.tags_removed if removes else self.tags_added
             target_set.add(target_tag)
 
@@ -693,5 +686,5 @@ def _parse_list(list_path):
     # empty YAML file. Just return an empty dict in that case.
     if not list_contents:
         return LowerDict()
-    return LowerDict({_loot_decode(p[u'name']): _PluginEntry(p) for p
+    return LowerDict({p[u'name']: _PluginEntry(p) for p
                       in list_contents.get(u'plugins', ())})

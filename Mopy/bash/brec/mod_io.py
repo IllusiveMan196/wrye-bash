@@ -188,25 +188,25 @@ class TopGrupHeader(GrupHeader):
 def unpack_header(ins, __rh=RecordHeader):
     """Header factory."""
     # args = header_sig, size, uint0, uint1, uint2[, uint3]
-    args = ins.unpack(__rh.header_unpack, __rh.rec_header_size, u'REC_HEADER') # PY3: header_sig, *args = ...
+    header_sig, *args = ins.unpack(__rh.header_unpack, __rh.rec_header_size,
+                                   u'REC_HEADER')
     #--Bad type?
-    header_sig = args[0]
     if header_sig not in __rh.valid_header_sigs:
         raise ModError(ins.inName, u'Bad header type: %r' % header_sig)
     #--Record
     if header_sig != b'GRUP':
-        return RecHeader(*args)
+        return RecHeader(header_sig, *args)
     #--Top Group
-    elif args[3] == 0: #groupType == 0 (Top Type)
-        str0 = struct_pack(u'I', args[2])
+    elif args[2] == 0: #groupType == 0 (Top Type)
+        str0 = struct_pack(u'I', args[1])
         if str0 in __rh.top_grup_sigs:
             args = list(args)
-            args[2] = str0
-            del args[3]
-            return TopGrupHeader(*args[1:])
+            args[1] = str0
+            del args[2]
+            return TopGrupHeader(*args)
         else:
             raise ModError(ins.inName, u'Bad Top GRUP type: %r' % str0)
-    return GrupHeader(*args[1:])
+    return GrupHeader(*args)
 
 #------------------------------------------------------------------------------
 # Low-level reading/writing ---------------------------------------------------

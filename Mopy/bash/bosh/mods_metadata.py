@@ -272,11 +272,9 @@ def checkMods(mc_parent, showModList=False, showCRC=False, showVersion=True,
                             # Convert into a load order FormID - ugly but fast,
                             # inlined and hand-optmized from various methods.
                             # Calling them would be way too slow.
-                            # PY3: drop the int() call
-                            lo_fid = int(
-                                r_fid & 0xFFFFFF | plugin_to_acti_index[
-                                    p_masters[p_num_masters - 1 if is_hitme
-                                              else r_mod_index]] << 24)
+                            lo_fid = (r_fid & 0xFFFFFF | plugin_to_acti_index[
+                                p_masters[p_num_masters - 1 if is_hitme else
+                                r_mod_index]] << 24)
                             all_record_versions[lo_fid].append(
                                 (r_eid, r_header.recType, p_ci_key))
             # Check for record type collisions, i.e. overrides where the record

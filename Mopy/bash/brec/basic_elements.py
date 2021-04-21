@@ -100,7 +100,7 @@ class Subrecord(object):
                                                               lenData))
         outWrite(binary_data)
 
-def unpackSubHeader(ins, rsig=b'----', # PY3: ,*,
+def unpackSubHeader(ins, rsig=b'----', *,
                     __unpacker=_int_unpacker, __sr=Subrecord):
     """Unpack a subrecord header. Optionally checks for match with expected
     type and size."""
