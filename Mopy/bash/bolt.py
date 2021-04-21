@@ -23,15 +23,12 @@
 
 # Imports ---------------------------------------------------------------------
 #--Standard
-
-
-import pickle
 import collections
-import copy
 import datetime
 import errno
 import io
 import os
+import pickle
 import re
 import shutil
 import stat
@@ -43,12 +40,12 @@ import tempfile
 import textwrap
 import traceback
 from binascii import crc32
+from contextlib import contextmanager, redirect_stdout
 from functools import partial
 from itertools import chain
 from keyword import iskeyword
 from operator import attrgetter
 from urllib.parse import quote
-from contextlib import contextmanager, redirect_stdout
 
 import chardet
 
@@ -1409,11 +1406,9 @@ class Settings(DataDict):
         self.deleted = set()
 
     def loadDefaults(self, default_settings):
-        """Add default settings to dictionary. Will not replace values that are already set."""
+        """Add default settings to dictionary."""
         self.defaults = default_settings
-        for key in default_settings: # PY3: ChainMap?
-            if key not in self:
-                self[key] = copy.deepcopy(default_settings[key])
+        self._data = collections.ChainMap(self._data, self.defaults)
 
     def save(self):
         """Save to pickle file. Only key/values marked as changed are saved."""
