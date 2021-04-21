@@ -327,18 +327,21 @@ class ModFile(object):
     def getLongMapper(self):
         """Returns a mapping function to map short fids to long fids."""
         masters_list = self.augmented_masters()
-        maxMaster = len(masters_list)-1
+        max_masters = len(masters_list) - 1
         def mapper(short_fid):
-            if short_fid is None: return None
-            if isinstance(short_fid, tuple): return short_fid
-            # PY3: drop the int() calls
-            mod,object = int(short_fid >> 24), int(short_fid & 0xFFFFFF)
-            return masters_list[min(mod, maxMaster)], object # clamp HITMEs
+            # Return unchanged for None (== unset) and fids that are already
+            # in long format
+            ##: Drop long check in the future?
+            if short_fid is None or isinstance(short_fid, tuple):
+                return short_fid
+            # Clamp HITMEs by using at most max_masters for master index
+            return (masters_list[min(short_fid >> 24, max_masters)],
+                    short_fid & 0xFFFFFF)
         return mapper
 
     def augmented_masters(self):
         """List of plugin masters with the plugin's own name appended."""
-        return self.tes4.masters + [self.fileInfo.ci_key] # Py3: unpack
+        return [*self.tes4.masters, self.fileInfo.ci_key]
 
     def getShortMapper(self):
         """Returns a mapping function to map long fids to short fids."""

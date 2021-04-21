@@ -518,8 +518,7 @@ class _ChoiceMenuMixin(object):
 
     def ShowChoiceMenu(self, lb_selection_dex): raise exception.AbstractError
 
-# PY3: drop long, duh
-_label_formats = {str: u'%s', float: u'%4.2f', int: u'%d', int: u'%d'}
+_label_formats = {str: u'%s', float: u'%4.2f', int: u'%d'}
 def _custom_label(label, value): # edit label text with value
     return u'%s: %s' % (label, _label_formats[type(value)] % value)
 
