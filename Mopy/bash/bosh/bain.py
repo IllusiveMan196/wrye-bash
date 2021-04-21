@@ -46,7 +46,7 @@ from ..exception import AbstractError, ArgumentError, BSAError, CancelError, \
     InstallerArchiveError, SkipError, StateError, FileError
 from ..ini_files import OBSEIniFile
 
-os_sep = str(os.path.sep) # PY3: already unicode
+os_sep = os.path.sep
 
 class Installer(ListInfo):
     """Object representing an installer archive, its user configuration, and
