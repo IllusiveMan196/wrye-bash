@@ -80,22 +80,21 @@ def strFid(form_id):
     else:
         return u'%08X' % form_id
 
-# PY3: drop the int() calls in these four methods
 def genFid(modIndex,objectIndex):
     """Generates a fid from modIndex and ObjectIndex."""
-    return int(objectIndex) | (int(modIndex) << 24)
+    return objectIndex | (modIndex << 24)
 
 def getModIndex(form_id):
     """Returns the modIndex portion of a fid."""
-    return int(form_id >> 24)
+    return form_id >> 24
 
 def getObjectIndex(form_id):
     """Returns the objectIndex portion of a fid."""
-    return int(form_id & 0x00FFFFFF)
+    return form_id & 0x00FFFFFF
 
 def getFormIndices(form_id):
     """Returns tuple of modIndex and ObjectIndex of fid."""
-    return int(form_id >> 24), int(form_id & 0x00FFFFFF)
+    return form_id >> 24, form_id & 0x00FFFFFF
 
 # Common flags ----------------------------------------------------------------
 ##: xEdit marks these as unknown_is_unused, at least in Skyrim, but it makes no

@@ -195,8 +195,8 @@ class MelCtda(MelUnion):
     def getLoaders(self, loaders):
         loaders[self._ctda_mel.mel_sig] = self
 
-    def getSlotsUsed(self): # PY3: unpack
-        return (self.decider_result_attr,) + self._ctda_mel.getSlotsUsed()
+    def getSlotsUsed(self):
+        return self.decider_result_attr, *self._ctda_mel.getSlotsUsed()
 
     def setDefault(self, record):
         next(iter(self.element_mapping.values())).setDefault(record)

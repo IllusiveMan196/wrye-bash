@@ -312,14 +312,9 @@ class LowerDict(dict):
 
     @staticmethod # because this doesn't make sense as a global function.
     def _process_args(mapping=(), **kwargs):
-        if hasattr(mapping, u'items'): # PY3: items
-            mapping = getattr(mapping, u'items')()
-        # PY3: fix mess below - kwargs keys are bytes im py2
-        return ((CIstr(k) if type(k) is str else k, v) for k, v in chain(
-            ((k.decode(u'ascii') if type(k) is bytes else k, v) for k, v in
-             mapping),
-            ((k.decode(u'ascii') if type(k) is bytes else k, v) for k, v in
-             getattr(kwargs, u'items')())))
+        if hasattr(mapping, u'items'):
+            mapping = mapping.items()
+        return ((CIstr(k), v) for k, v in chain(mapping, kwargs.items()))
 
     def __init__(self, mapping=(), **kwargs):
         # dicts take a mapping or iterable as their optional first argument
@@ -1137,18 +1132,8 @@ class DataDict(object):
         return iter(self._data)
     def values(self):
         return self._data.values()
-    def itervalues(self): # PY3: Drop
-        return list(self.values())
-    def viewvalues(self): # PY3: Drop
-        return list(self.values())
     def items(self):
         return self._data.items()
-    def iteritems(self): # PY3: Drop
-        return list(self.items())
-    def viewitems(self): # PY3: Drop
-        return list(self.items())
-    def get(self,key,default=None):
-        return self._data.get(key, default)
     def pop(self,key,default=None):
         return self._data.pop(key, default)
 
@@ -1550,19 +1535,6 @@ class DataTableColumn(object):
         tableData = self._table._data
         column = self.column
         return (tableData[k][column] for k in self)
-    def itervalues(self): # PY3: drop, 2to3 will have made it unused
-        return list(self.values())
-    def viewvalues(self): # PY3: drop, 2to3 will have made it unused
-        return list(self.values())
-    def items(self):
-        """Dictionary emulation."""
-        tableData = self._table._data
-        column = self.column
-        return ((k, tableData[k][column]) for k in self)
-    def iteritems(self): # PY3: Drop
-        return list(self.items())
-    def viewitems(self): # PY3: Drop
-        return list(self.items())
     def clear(self):
         """Dictionary emulation."""
         self._table.delColumn(self.column)
