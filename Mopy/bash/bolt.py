@@ -1734,12 +1734,6 @@ def text_wrap(text_to_wrap, width=60):
     pars = [textwrap.fill(line, width) for line in text_to_wrap.split(u'\n')]
     return u'\n'.join(pars)
 
-_formats = dict.fromkeys(u'bBhHiIlLqQ', u'%d')
-_formats.update({u'f': u'%f', u'd': u'%f', u's': u'"%s"'})
-def csvFormat(format_chars, __formats=_formats):
-    """Returns csv format for specified structure format."""
-    return u','.join([__formats[c] for c in format_chars])
-
 deprintOn = False
 
 import inspect
