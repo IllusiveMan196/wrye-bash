@@ -142,7 +142,7 @@ class ColorChecks(ImageList):
                 shortKey = status + u'.' + state
                 image_key = u'checkbox.' + shortKey
                 img = bass.dirs[u'images'].join(
-                    u'checkbox_%s_%s.png' % (status, state))
+                    f'checkbox_{status}_{state}.png')
                 image = images[image_key] = ImageWrapper(img, ImageWrapper.typesDict[u'png'])
                 self.Add(image, shortKey)
 
@@ -1210,8 +1210,7 @@ class UIList(wx.Panel):
         try:
             return self.data_store.rename_operation(info, newFileName)
         except (CancelError, OSError):
-            deprint(u'Renaming %s to %s failed' % (info, newFileName),
-                    traceback=True)
+            deprint(f'Renaming {info} to {newFileName} failed', traceback=True)
             # When using moveTo I would get "WindowsError:[Error 32]The process
             # cannot access ..." -  the code below was reverting the changes.
             # With shellMove I mostly get CancelError so below not needed -
@@ -1301,8 +1300,7 @@ class UIList(wx.Panel):
             try:
                 sel_inf.abs_path.start()
             except OSError:
-                deprint(u'Failed to open %s' % sel_inf.abs_path,
-                        traceback=True)
+                deprint(f'Failed to open {sel_inf.abs_path}', traceback=True)
 
     #--Sorting ----------------------------------------------------------------
     def SortItems(self, column=None, reverse=u'CURRENT'):
@@ -1491,7 +1489,7 @@ class UIList(wx.Panel):
                 try:
                     self.data_store.delete([i], doRefresh=False,
                                            recycle=recycle)
-                except BoltError as e: showError(self, u'%s' % e)
+                except BoltError as e: showError(self, f'{e}')
                 except (AccessDeniedError, CancelError, SkipError): pass
             else:
                 self.data_store.delete_refresh(items, None,
@@ -1521,7 +1519,7 @@ class UIList(wx.Panel):
             self.data_store.store_dir.start()
             return
         except OSError:
-            deprint(u'Creating %s' % self.data_store.store_dir)
+            deprint(f'Creating {self.data_store.store_dir}')
             self.data_store.store_dir.makedirs()
         self.data_store.store_dir.start()
 

@@ -176,7 +176,7 @@ def exit_cleanup():
                     exe = sys.executable
                 exe = [u'%s', u'"%s"'][u' ' in exe] % exe
                 cli = u' '.join([u'%s', u'"%s"'][u' ' in x] % x for x in cli)
-                cmd_line = u'%s %s' % (exe, cli)
+                cmd_line = f'{exe} {cli}'
                 win32api.ShellExecute(0, u'runas', exe, cli, None, True)
                 return
             else:
@@ -188,7 +188,7 @@ def exit_cleanup():
         except Exception as error:
             print(error)
             print(u'Error Attempting to Restart Wrye Bash!')
-            print(u'cmd line: %s' % (cmd_line, ))
+            print(f'cmd line: {cmd_line}')
             print()
             raise
 
@@ -200,23 +200,23 @@ def dump_environment():
     import yaml
     fse = bolt.Path.sys_fs_enc
     msg = [
-        u'Using Wrye Bash Version %s%s' % (bass.AppVersion,
-            u' (Standalone)' if bass.is_standalone else u''),
-        u'OS info: %s, running on %s' % (
-            platform.platform(), platform.processor() or u'<unknown>'),
+        f'Using Wrye Bash Version {bass.AppVersion}'
+        f'{u" (Standalone)" if bass.is_standalone else u""}',
+        f'OS info: {platform.platform()}, running on '
+        f'{platform.processor() or u"<unknown>"}',
         u'Python version: %s' % sys.version,
-        u'wxPython version: %s' % _wx.version() if _wx is not None else \
-            u'wxPython not found',
-        u'python-lz4 version: %s; bundled LZ4 version: %s' % (
-            lz4.version.version, lz4.library_version_string()),
-        u'pyyaml version: %s' % yaml.__version__,
+        f'wxPython version: '
+        f'{_wx.version() if _wx is not None else u"wxPython not found"}',
+        f'python-lz4 version: {lz4.version.version}; bundled LZ4 version: '
+        f'{lz4.library_version_string()}',
+        f'pyyaml version: {yaml.__version__}',
         # Standalone: stdout will actually be pointing to stderr, which has no
         # 'encoding' attribute
-        u'Input encoding: %s; output encoding: %s' % (
-            sys.stdin.encoding, getattr(sys.stdout, u'encoding', None)),
-        u'Filesystem encoding: %s%s' % (fse,
-            (u' - using %s' % bolt.Path.sys_fs_enc) if not fse else u''),
-        u'Command line: %s' % sys.argv,
+        f'Input encoding: {sys.stdin.encoding}; output encoding: '
+        f'{getattr(sys.stdout, u"encoding", None)}',
+        f'Filesystem encoding: {fse}'
+        f'{(u" - using %s" % bolt.Path.sys_fs_enc) if not fse else u""}',
+        f'Command line: {sys.argv}',
     ]
     for m in msg:
         bolt.deprint(m)
@@ -488,7 +488,7 @@ def _import_bush_and_set_game(opts, bashIni):
             return None
         # Add the game to the command line, so we use it if we restart
         gname, gm_path = retCode
-        bass.update_sys_argv([u'--oblivionPath', u'%s' % gm_path])
+        bass.update_sys_argv([u'--oblivionPath', f'{gm_path}'])
         bush.detect_and_set_game(opts.oblivionPath, bashIni, gname, gm_path)
     return bush.game
 
