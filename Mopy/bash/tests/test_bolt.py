@@ -25,7 +25,8 @@ from collections import OrderedDict
 import pytest
 
 from ..bolt import LowerDict, DefaultLowerDict, OrderedLowerDict, decoder, \
-    encode, getbestencoding, GPath, Path, Rounder
+    encode, getbestencoding, GPath, Path, Rounder, LowerSet, \
+    CIstr  # CIstr also needed for the evals
 
 def test_getbestencoding():
     """Tests getbestencoding. Keep this one small, we don't want to test
@@ -260,8 +261,6 @@ class TestLowerDict(object):
     def test___repr__(self):
         a = self.dict_type()
         a.update(dict(sape=4139, guido=4127, jack=4098))
-        # Needed for the eval below, not unused!
-        from ..bolt import CIstr
         assert eval(repr(a)) == a
 
 class TestDefaultLowerDict(TestLowerDict):
@@ -455,3 +454,48 @@ class TestRounder(object):
         assert not (rounder_5th == None)
         assert not (rounder_5th == True)
         assert not (rounder_5th == 55)
+
+class TestLowerSet(object):
+    type_of_set = LowerSet
+
+    def test___init__(self):
+        a = self.type_of_set([u'A', u'a'])
+        b = self.type_of_set([u'a'])
+        c = self.type_of_set([u'A'])
+        d = self.type_of_set(c)
+        assert a == b
+        assert a == c
+        assert a == d
+
+    def test___len__(self):
+        a = self.type_of_set([u'A', u'a'])
+        assert len(a) == 1
+
+    def test___contains__(self):
+        a = self.type_of_set([u'A', u'a'])
+        assert u'A' in a
+        assert u'a' in a
+
+    def test___iter__(self):
+        a = self.type_of_set([u'A', u'a', u'b'])
+        assert sorted(a) == [CIstr(u'a'), CIstr(u'b')]
+
+    def test_add(self):
+        a = self.type_of_set([u'A', u'a'])
+        a.add(u'B')
+        assert u'B' in a
+        assert u'b' in a
+
+    def test_discard(self):
+        a = self.type_of_set([u'A', u'a'])
+        a.discard(u'B')
+        assert u'b' not in a
+        assert u'B' not in a
+        a.discard(u'A')
+        assert u'a' not in a
+        assert u'A' not in a
+        assert not a
+
+    def test___repr__(self):
+        a = self.type_of_set([u'A', u'a'])
+        assert eval(repr(a)) == a

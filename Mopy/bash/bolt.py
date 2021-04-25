@@ -400,6 +400,36 @@ class OrderedLowerDict(LowerDict, collections.OrderedDict):
     """LowerDict that inherits from OrdererdDict."""
     __slots__ = () # no __dict__ - that would be redundant
 
+class LowerSet(collections.MutableSet):
+    """Set that transforms its elements to CIstr instances.
+    See: https://stackoverflow.com/a/6698723/281545
+    https://code.activestate.com/recipes/576694/
+    """
+
+    def __init__(self, iterable=None):
+        self.__set = set() if iterable is None else {CIstr(x) for x in
+                                                     iterable}
+
+    def __len__(self):
+        return len(self.__set)
+
+    def __contains__(self, key):
+        return CIstr(key) in self.__set
+
+    def __iter__(self):
+        return iter(self.__set)
+
+    def add(self, key):
+        self.__set.add(CIstr(key))
+
+    def discard(self, key):
+        self.__set.discard(CIstr(key))
+
+    def __repr__(self):
+        if not self:
+            return u'%s()' % (self.__class__.__name__,)
+        return u'%s(%r)' % (self.__class__.__name__, list(self))
+
 #------------------------------------------------------------------------------
 # cache attrgetter objects
 class _AttrGettersCache(dict):
