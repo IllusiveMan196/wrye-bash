@@ -419,7 +419,7 @@ class PCFaces(object):
         modFile = PCFaces._mod_load_fact(modInfo, by_sig=[b'NPC_'])
         short_mapper = modFile.getShortMapper()
         faces = {}
-        for npc in modFile.tops[b'NPC_'].getActiveRecords():
+        for rfid_, npc in modFile.tops[b'NPC_'].iter_present_records():
             face = PCFaces.PCFace()
             face.face_masters = modFile.augmented_masters()
             for a in (u'eid', u'race', u'eye', u'hair', u'hairLength',
@@ -442,7 +442,7 @@ class PCFaces(object):
         """Returns an array of Race Faces from a mod file."""
         modFile = PCFaces._mod_load_fact(modInfo, by_sig=[b'RACE'])
         faces = {}
-        for race in modFile.tops[b'RACE'].getActiveRecords():
+        for rfid_, race in modFile.tops[b'RACE'].iter_present_records():
             face = PCFaces.PCFace()
             face.face_masters = []
             for field in (u'eid',u'fggs_p',u'fgga_p',u'fgts_p'):

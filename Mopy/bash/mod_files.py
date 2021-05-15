@@ -394,19 +394,20 @@ class ModFile(object):
         nonhostile_recs = set()
         unpack_eid = structs_cache[u'I'].unpack
         if b'MGEF' in self.tops:
-            for record in self.tops[b'MGEF'].getActiveRecords():
+            for reid, record in self.tops[b'MGEF'].iter_present_records(
+                    rec_key=u'eid'):
                 ##: Skip OBME records, at least for now
                 if record.obme_record_version is not None: continue
-                m_school[record.eid] = record.school
+                m_school[reid] = record.school
                 target_set = (hostile_recs if record.flags.hostile
                               else nonhostile_recs)
-                target_set.add(record.eid)
+                target_set.add(reid)
                 try:
-                    target_set.add(unpack_eid(record.eid.encode(u'ascii'))[0])
+                    target_set.add(unpack_eid(reid.encode(u'ascii'))[0])
                 except struct_error:
                     raise ModError(None, u'Failed to unpack EDID for '
                                          u'%r' % record)
-                m_names[record.eid] = record.full or u'' # could this be None?
+                m_names[reid] = record.full or u'' # could this be None?
         self.cached_mgef_school = m_school
         self.cached_mgef_hostiles = m_hostiles - nonhostile_recs | hostile_recs
         self.cached_mgef_names = m_names

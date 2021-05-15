@@ -340,11 +340,10 @@ class MobObjects(MobBase):
         merge_ids_discard = mergeIds.discard
         copy_to_self = self.setRecord
         dest_rec_fids = self.id_records
-        for record in srcBlock.getActiveRecords():
-            src_rec_fid = record.fid
-            if src_rec_fid in dest_rec_fids:
+        for rfid, record in srcBlock.iter_present_records():
+            if rfid in dest_rec_fids:
                 copy_to_self(record.getTypeCopy())
-                merge_ids_discard(src_rec_fid)
+                merge_ids_discard(rfid)
 
     def merge_records(self, block, loadSet, mergeIds, iiSkipMerge, doFilter):
         # YUCK, drop these local imports!
@@ -359,9 +358,8 @@ class MobObjects(MobBase):
         loadSetIsSuperset = loadSet.issuperset
         mergeIdsAdd = mergeIds.add
         copy_to_self = self.setRecord
-        for record in block.getActiveRecords():
-            fid = record.fid
-            if is_oblivion and fid == bad_form: continue
+        for rfid, record in block.iter_present_records():
+            if is_oblivion and rfid == bad_form: continue
             #--Include this record?
             if doFilter:
                 # If we're Filter-tagged, perform merge filtering. Then, check
@@ -380,10 +378,10 @@ class MobObjects(MobBase):
             if iiSkipMerge: continue
             # We're past all hurdles - stick a copy of this record into
             # ourselves and mark it as merged
-            if record.isKeyedByEid and fid == _null_fid:
+            if record.isKeyedByEid and rfid == _null_fid:
                 mergeIdsAdd(record.eid)
             else:
-                mergeIdsAdd(fid)
+                mergeIdsAdd(rfid)
             copy_to_self(record.getTypeCopy())
         # Apply any merge filtering we've done above to the record block in
         # question. That way, patchers won't see the records that have been
