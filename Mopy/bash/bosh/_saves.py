@@ -249,7 +249,7 @@ class SaveFile(object):
         #--Records, temp effects, fids, worldspaces
         # (rec_id, rec_kind, flags, version, data)
         # rec_kind is an int, rec_id the short formid of the record in the save
-        self.records = []
+        self.records = [] # TODO rename _save_records
         self.fid_recNum = None
         self.tempEffects = None
         self.fids = None

@@ -101,9 +101,8 @@ class IndexingTweak(MultiTweakItem):
         for pl_path in patch_file.allMods:
             index_plugin = self._mod_file_read(pf_minfs[pl_path])
             for index_sig in self._index_sigs:
-                id_dict = self._indexed_records[index_sig]
-                for record in index_plugin.tops[index_sig].getActiveRecords():
-                    id_dict[record.fid] = record
+                self._indexed_records[index_sig].update(
+                    index_plugin.tops[index_sig].iter_present_records())
         super(IndexingTweak, self).prepare_for_tweaking(patch_file)
 
 class CustomChoiceTweak(MultiTweakItem):
@@ -139,7 +138,7 @@ class MultiTweaker(AMultiTweaker,Patcher):
             pool_record = rec_pool[curr_top].add
             poolable_tweaks = top_dict[True]
             if not poolable_tweaks: continue # likely complex type, e.g. CELL
-            for record in modFile.tops[curr_top].getActiveRecords():
+            for rfid_, record in modFile.tops[curr_top].iter_present_records():
                 for p_tweak in poolable_tweaks: # type: MultiTweakItem
                     if p_tweak.wants_record(record):
                         pool_record(record)
@@ -166,7 +165,8 @@ class MultiTweaker(AMultiTweaker,Patcher):
                                           self.patchFile)
             poolable_tweaks = top_dict[True]
             if not poolable_tweaks: continue  # likely complex type, e.g. CELL
-            for record in self.patchFile.tops[curr_top].getActiveRecords():
+            for rfid, record in self.patchFile.tops[
+                curr_top].iter_present_records():
                 for p_tweak in poolable_tweaks:  # type: MultiTweakItem
                     # Check if this tweak can actually change the record - just
                     # relying on the check in scanModFile is *not* enough.
@@ -180,8 +180,8 @@ class MultiTweaker(AMultiTweaker,Patcher):
                         # can't break early here, because more than one tweak
                         # may want to touch this record
                         p_tweak.tweak_record(record)
-                        keep(record.fid)
-                        tweak_counter[p_tweak][record.fid[0]] += 1
+                        keep(rfid)
+                        tweak_counter[p_tweak][rfid[0]] += 1
         # We're done with all tweaks, give them a chance to clean up and do any
         # finishing touches (e.g. creating records for GMST tweaks), then log
         for tweak in self.enabled_tweaks:

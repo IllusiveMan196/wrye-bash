@@ -152,9 +152,9 @@ class CoblExhaustionPatcher(_ExSpecialList):
     def scanModFile(self,modFile,progress): # if b'SPEL' not in modFile.tops: return
         patchRecords = self.patchFile.tops[b'SPEL']
         id_info_ = self.id_stored_data[b'FACT']
-        for record in modFile.tops[b'SPEL'].getActiveRecords():
+        for rfid, record in modFile.tops[b'SPEL'].iter_present_records():
             if not record.spellType == 2: continue
-            if record.fid in id_info_:
+            if rfid in id_info_:
                 patchRecords.setRecord(record.getTypeCopy())
 
     def buildPatch(self,log,progress):
@@ -247,8 +247,8 @@ class MorphFactionsPatcher(_ExSpecialList):
             record = modFile.tops[b'FACT'].getRecord(self.mFactLong)
             if record:
                 patchBlock.setRecord(record.getTypeCopy())
-        for record in modFile.tops[b'FACT'].getActiveRecords():
-            if record.fid in id_info_:
+        for rfid, record in modFile.tops[b'FACT'].iter_present_records():
+            if rfid in id_info_:
                 patchBlock.setRecord(record.getTypeCopy())
 
     def buildPatch(self,log,progress):
@@ -260,11 +260,9 @@ class MorphFactionsPatcher(_ExSpecialList):
         keep = self.patchFile.getKeeper()
         changed = Counter()
         mFactable = []
-        for record in modFile.tops[b'FACT'].getActiveRecords():
-            rec_fid = record.fid
-            if rec_fid not in id_info_: continue
-            if rec_fid == mFactLong: continue
-            mFactable.append(rec_fid)
+        for rfid, record in modFile.tops[b'FACT'].iter_present_records():
+            if rfid not in id_info_ or rfid == mFactLong: continue
+            mFactable.append(rfid)
             #--Update record if it doesn't have an existing relation with
             # mFactLong
             if not any(mFactLong == relation.faction for relation in
@@ -274,7 +272,7 @@ class MorphFactionsPatcher(_ExSpecialList):
                 relation.faction = mFactLong
                 relation.mod = 10
                 record.relations.append(relation)
-                mname,rankName = id_info_[rec_fid]
+                mname, rankName = id_info_[rfid]
                 record.full = mname
                 if not record.ranks:
                     record.ranks = [record.getDefault(u'ranks')]
@@ -286,8 +284,8 @@ class MorphFactionsPatcher(_ExSpecialList):
                                 u'Menus\\Stats\\Cobl\\generic%02d.dds' %
                                 # if rank_level was not present it will be None
                                 (rank.rank_level or 0))
-                keep(rec_fid)
-                changed[rec_fid[0]] += 1
+                keep(rfid)
+                changed[rfid[0]] += 1
         #--MFact record
         record = modFile.tops[b'FACT'].getRecord(mFactLong)
         if record:
