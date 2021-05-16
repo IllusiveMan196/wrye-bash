@@ -110,7 +110,7 @@ class ContentsCheckerPatcher(Patcher):
                 # Grab the types that are actually valid for our current record
                 # types
                 valid_types = set(self.contType_entryTypes[rec_type])
-                for record in modFile.tops[rec_type].records:
+                for rfid, record in modFile.tops[rec_type].iter_present_records():
                     # Set up two lists, one containing the current record
                     # contents, and a second one that we will be filling with
                     # only valid entries.
@@ -134,13 +134,13 @@ class ContentsCheckerPatcher(Patcher):
                             # point, we know that the lists have diverged - but
                             # we need to keep going, there may be more invalid
                             # entries for this record.
-                            id_removed[record.fid].append(entry_fid)
-                            id_eid[record.fid] = record.eid
+                            id_removed[rfid].append(entry_fid)
+                            id_eid[rfid] = record.eid
                     # Check if after filtering using the code above, our two
                     # lists have diverged and, if so, keep the changed record
                     if len(new_entries) != len(current_entries):
                         setattr(record, group_attr, new_entries)
-                        keep(record.fid)
+                        keep(rfid)
                 # Log the result if we removed at least one entry
                 if id_removed:
                     log(u'\n=== ' + rec_type)
@@ -212,7 +212,7 @@ class EyeCheckerPatcher(Patcher):
         def setRaceEyeMesh(race,rightPath,leftPath):
             race.rightEye.modPath = rightPath
             race.leftEye.modPath = leftPath
-        for race in patchFile.tops[b'RACE'].records: # TODO: iter_present_records ?
+        for rfid, race in patchFile.tops[b'RACE'].iter_present_records():
             if not race.eyes: continue  #--Sheogorath. Assume is handled
             # correctly.
             if not race.rightEye or not race.leftEye: continue #--WIPZ race?
@@ -243,7 +243,7 @@ class EyeCheckerPatcher(Patcher):
                 setRaceEyeMesh(race,*maxEyesMesh)
                 raceChanged = True
             #--Multiple eye meshes (and playable)?
-            if len(mesh_eye) > 1 and (race.flags.playable or race.fid == (
+            if len(mesh_eye) > 1 and (race.flags.playable or rfid == (
                     _main_master, 0x038010)):
                 #--If blueEyeMesh (mesh used for vanilla eyes) is present,
                 # use that.
@@ -266,7 +266,7 @@ class EyeCheckerPatcher(Patcher):
                     raceChanged = True
             if raceChanged:
                 racesFiltered.append(race.eid)
-                keep(race.fid)
+                keep(rfid)
         log.setHeader(u'= ' + self._patcher_name)
         log(u'\n=== ' + _(u'Eye Meshes Filtered'))
         if not racesFiltered:
@@ -298,10 +298,12 @@ class RaceCheckerPatcher(Patcher):
         if b'RACE' not in patchFile.tops: return
         keep = patchFile.getKeeper()
         racesSorted = []
-        eyeNames = {x.fid: x.full for x in patchFile.tops[b'EYES'].records}
-        hairNames = {x.fid: x.full for x in patchFile.tops[b'HAIR'].records}
-        for race in patchFile.tops[b'RACE'].records:
-            if (race.flags.playable or race.fid == (
+        eyeNames = {f: r.full for f, r in
+                    patchFile.tops[b'EYES'].iter_present_records()}
+        hairNames = {f: r.full for f, r in
+                     patchFile.tops[b'HAIR'].iter_present_records()}
+        for rfid, race in patchFile.tops[b'RACE'].iter_present_records():
+            if (race.flags.playable or rfid == (
                     _main_master, 0x038010)) and race.eyes:
                 prev_hairs = race.hairs[:]
                 race.hairs.sort(key=lambda x: hairNames.get(x))
@@ -309,7 +311,7 @@ class RaceCheckerPatcher(Patcher):
                 race.eyes.sort(key=lambda x: eyeNames.get(x))
                 if race.hairs != prev_hairs or race.eyes != prev_eyes:
                     racesSorted.append(race.eid)
-                    keep(race.fid)
+                    keep(rfid)
         log.setHeader(u'= ' + self._patcher_name)
         log(u'\n=== ' + _(u'Eyes/Hair Sorted'))
         if not racesSorted:
@@ -368,49 +370,46 @@ class NpcCheckerPatcher(Patcher):
         final_eyes = {}
         defaultMaleHair = {}
         defaultFemaleHair = {}
-        maleHairs = {x.fid for x in patchFile.tops[b'HAIR'].records
-                     if not x.flags.notMale}
-        femaleHairs = {x.fid for x in patchFile.tops[b'HAIR'].records
-                       if not x.flags.notFemale}
-        for race in patchFile.tops[b'RACE'].records:
-            if (race.flags.playable or race.fid == (
+        hair_recs = list(patchFile.tops[b'HAIR'].iter_present_records())
+        maleHairs = {f for f, r in hair_recs if not r.flags.notMale}
+        femaleHairs = {f for f, r in hair_recs if not r.flags.notFemale}
+        for rfid, race in patchFile.tops[b'RACE'].iter_present_records():
+            if (race.flags.playable or rfid == (
                     _main_master, 0x038010)) and race.eyes:
-                final_eyes[race.fid] = [x for x in
-                                        self.vanilla_eyes.get(race.fid, [])
-                                        if x in race.eyes]
-                if not final_eyes[race.fid]:
-                    final_eyes[race.fid] = [race.eyes[0]]
-                defaultMaleHair[race.fid] = [x for x in race.hairs if
-                                             x in maleHairs]
-                defaultFemaleHair[race.fid] = [x for x in race.hairs if
-                                               x in femaleHairs]
+                final_eyes[rfid] = [x for x in self.vanilla_eyes.get(rfid, [])
+                                    if x in race.eyes]
+                if not final_eyes[rfid]:
+                    final_eyes[rfid] = [race.eyes[0]]
+                defaultMaleHair[rfid] = [x for x in race.hairs if
+                                         x in maleHairs]
+                defaultFemaleHair[rfid] = [x for x in race.hairs if
+                                           x in femaleHairs]
         #--Npcs with unassigned eyes/hair
-        for npc in patchFile.tops[b'NPC_'].records:
-            npc_fid = npc.fid
-            if npc_fid == (_main_master, 0x000007): continue # skip player
+        for rfid, npc in patchFile.tops[b'NPC_'].iter_present_records():
+            if rfid == (_main_master, 0x000007): continue  # skip player
             if npc.full is not None and npc.race == (
                     _main_master, 0x038010) and not reProcess.search(
                     npc.full): continue
             if is_templated(npc, u'useModelAnimation'):
                 continue # Changing templated actors wouldn't do anything
             raceEyes = final_eyes.get(npc.race)
-            npc_src_plugin, npc_obj_id = npc_fid
+            npc_src_plugin, npc_obj_id = rfid
             random.seed(npc_obj_id) # make it deterministic
             if not npc.eye and raceEyes:
                 npc.eye = random.choice(raceEyes)
                 mod_npcsFixed[npc_src_plugin] += 1
-                keep(npc_fid)
+                keep(rfid)
             raceHair = (
                 (defaultMaleHair, defaultFemaleHair)[npc.flags.female]).get(
                 npc.race)
             if not npc.hair and raceHair:
                 npc.hair = random.choice(raceHair)
                 mod_npcsFixed[npc_src_plugin] += 1
-                keep(npc_fid)
+                keep(rfid)
             if not npc.hairLength:
                 npc.hairLength = random.random()
                 mod_npcsFixed[npc_src_plugin] += 1
-                keep(npc_fid)
+                keep(rfid)
         #--Done
         log.setHeader(u'= ' + self._patcher_name)
         if mod_npcsFixed:
