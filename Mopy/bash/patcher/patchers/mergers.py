@@ -102,8 +102,8 @@ class _AMerger(ImportPatcher):
             for block in self._wanted_subrecord:
                 if block not in srcFile.tops: continue
                 self._present_sigs.add(block)
-                for record in srcFile.tops[block].getActiveRecords():
-                    self.touched.add(record.fid)
+                self.touched.update(
+                    f for f, _r in srcFile.tops[block].iter_present_records())
             progress.plus()
         self.isActive = bool(self._present_sigs)
 
@@ -119,11 +119,10 @@ class _AMerger(ImportPatcher):
             for curr_sig in self._present_sigs:
                 if curr_sig not in modFile.tops: continue
                 sr_attr = self._wanted_subrecord[curr_sig]
-                for record in modFile.tops[curr_sig].getActiveRecords():
-                    if record.fid in touched:
+                for rfid, record in modFile.tops[curr_sig].iter_present_records():
+                    if rfid in touched:
                         try:
-                            id_entries[record.fid] = getattr(
-                                record, sr_attr)[:]
+                            id_entries[rfid] = getattr(record, sr_attr)[:]
                         except AttributeError:
                             raise ModSigMismatchError(modName, record)
         #--Source mod?
@@ -167,12 +166,11 @@ class _AMerger(ImportPatcher):
                 if curr_sig not in modFile.tops: continue
                 patchBlock = self.patchFile.tops[curr_sig]
                 id_records = patchBlock.id_records
-                for record in modFile.tops[curr_sig].getActiveRecords():
+                for rfid, record in modFile.tops[curr_sig].iter_present_records():
                     # Copy the defining version of each record into the BP -
                     # updating it is handled by
                     # mergeModFile/update_patch_records_from_mod
-                    curr_fid = record.fid
-                    if curr_fid in touched and curr_fid not in id_records:
+                    if rfid in touched and rfid not in id_records:
                         patchBlock.setRecord(record.getTypeCopy())
 
     def buildPatch(self,log,progress):
@@ -183,8 +181,8 @@ class _AMerger(ImportPatcher):
         en_key = self._entry_key
         for curr_sig in self._present_sigs:
             sr_attr = self._wanted_subrecord[curr_sig]
-            for record in self.patchFile.tops[curr_sig].records:
-                deltas = id_deltas[record.fid]
+            for rfid, record in self.patchFile.tops[curr_sig].iter_present_records():
+                deltas = id_deltas[rfid]
                 if not deltas: continue
                 # Use sorted to preserve duplicates, but ignore order. This is
                 # safe because order does not matter for items.
@@ -226,8 +224,8 @@ class _AMerger(ImportPatcher):
                             if en_key(entry) not in current_entries:
                                 record_entries.append(entry)
                 if old_items != sorted(getattr(record, sr_attr), key=en_key):
-                    keep(record.fid)
-                    mod_count[record.fid[0]] += 1
+                    keep(rfid)
+                    mod_count[rfid[0]] += 1
         self.id_deltas.clear()
         self._patchLog(log,mod_count)
 
@@ -341,8 +339,8 @@ class ImportActorsAIPackagesPatcher(ImportPatcher):
             bashTags = srcInfo.getBashTags()
             for rsig in read_sigs:
                 if rsig not in srcFile.tops: continue
-                for record in srcFile.tops[rsig].getActiveRecords():
-                    tempData[record.fid] = record.aiPackages
+                for rfid, record in srcFile.tops[rsig].iter_present_records():
+                    tempData[rfid] = record.aiPackages
             for master in reversed(srcInfo.masterNames):
                 if master not in minfs: continue # or break filter mods
                 if master in cachedMasters:
@@ -354,8 +352,8 @@ class ImportActorsAIPackagesPatcher(ImportPatcher):
                 for rsig in read_sigs:
                     if rsig not in srcFile.tops or rsig not in masterFile.tops:
                         continue
-                    for record in masterFile.tops[rsig].getActiveRecords():
-                        fi = record.fid
+                    for rfid, record in masterFile.tops[rsig].iter_present_records():
+                        fi = rfid
                         if fi not in tempData: continue
                         if record.aiPackages == tempData[fi] and not \
                             u'Actors.AIPackagesForceAdd' in bashTags:
@@ -412,10 +410,9 @@ class ImportActorsAIPackagesPatcher(ImportPatcher):
         merged_deleted = self.id_merged_deleted
         for top_grup_sig in self._read_sigs:
             patchBlock = self.patchFile.tops[top_grup_sig]
-            for record in modFile.tops[top_grup_sig].getActiveRecords():
-                fid = record.fid
-                if fid not in merged_deleted: continue
-                if record.aiPackages != merged_deleted[fid][u'merged']:
+            for rfid, record in modFile.tops[top_grup_sig].iter_present_records():
+                if rfid not in merged_deleted: continue
+                if record.aiPackages != merged_deleted[rfid][u'merged']:
                     patchBlock.setRecord(record.getTypeCopy())
 
     def buildPatch(self,log,progress): # buildPatch1:no modFileTops, for type..
@@ -425,16 +422,15 @@ class ImportActorsAIPackagesPatcher(ImportPatcher):
         merged_deleted = self.id_merged_deleted
         mod_count = Counter()
         for top_grup_sig in self._read_sigs:
-            for record in self.patchFile.tops[top_grup_sig].records:
-                fid = record.fid
-                if fid not in merged_deleted: continue
+            for rfid, record in self.patchFile.tops[top_grup_sig].iter_present_records():
+                if rfid not in merged_deleted: continue
                 changed = False
-                if record.aiPackages != merged_deleted[fid][u'merged']:
-                    record.aiPackages = merged_deleted[fid][u'merged']
+                if record.aiPackages != merged_deleted[rfid][u'merged']:
+                    record.aiPackages = merged_deleted[rfid][u'merged']
                     changed = True
                 if changed:
-                    keep(record.fid)
-                    mod_count[record.fid[0]] += 1
+                    keep(rfid)
+                    mod_count[rfid[0]] += 1
         self.id_merged_deleted.clear()
         self._patchLog(log,mod_count)
 
@@ -467,8 +463,8 @@ class ImportActorsSpellsPatcher(ImportPatcher):
             bashTags = srcInfo.getBashTags()
             for rsig in read_sigs:
                 if rsig not in srcFile.tops: continue
-                for record in srcFile.tops[rsig].getActiveRecords():
-                    tempData[record.fid] = record.spells
+                for rfid, record in srcFile.tops[rsig].iter_present_records():
+                    tempData[rfid] = record.spells
             for master in reversed(srcInfo.masterNames):
                 if master not in minfs: continue # or break filter mods
                 if master in cachedMasters:
@@ -480,77 +476,76 @@ class ImportActorsSpellsPatcher(ImportPatcher):
                 for rsig in read_sigs:
                     if rsig not in srcFile.tops or rsig not in masterFile.tops:
                         continue
-                    for record in masterFile.tops[rsig].getActiveRecords():
-                        fid = record.fid
-                        if fid not in tempData: continue
-                        if record.spells == tempData[fid] and not u'Actors.SpellsForceAdd' in bashTags:
+                    for rfid, record in masterFile.tops[rsig].iter_present_records():
+                        if rfid not in tempData: continue
+                        if record.spells == tempData[rfid] and not u'Actors.SpellsForceAdd' in bashTags:
                             # if subrecord is identical to the last master then we don't care about older masters.
-                            del tempData[fid]
+                            del tempData[rfid]
                             continue
-                        if fid in mer_del:
-                            if tempData[fid] == mer_del[fid][u'merged']: continue
-                        recordData = {u'deleted':[],u'merged':tempData[fid]}
+                        if rfid in mer_del:
+                            if tempData[rfid] == mer_del[rfid][u'merged']: continue
+                        recordData = {u'deleted':[],u'merged':tempData[rfid]}
                         for spell in record.spells:
-                            if spell not in tempData[fid]:
+                            if spell not in tempData[rfid]:
                                 recordData[u'deleted'].append(spell)
-                        if fid not in mer_del:
-                            mer_del[fid] = recordData
+                        if rfid not in mer_del:
+                            mer_del[rfid] = recordData
                         else:
                             for spell in recordData[u'deleted']:
-                                if spell in mer_del[fid][u'merged']:
-                                    mer_del[fid][u'merged'].remove(spell)
-                                mer_del[fid][u'deleted'].append(spell)
-                            if mer_del[fid][u'merged'] == []:
+                                if spell in mer_del[rfid][u'merged']:
+                                    mer_del[rfid][u'merged'].remove(spell)
+                                mer_del[rfid][u'deleted'].append(spell)
+                            if mer_del[rfid][u'merged'] == []:
                                 for spell in recordData[u'merged']:
-                                    if spell in mer_del[fid][u'deleted'] and not u'Actors.SpellsForceAdd' in bashTags: continue
-                                    mer_del[fid][u'merged'].append(spell)
+                                    if spell in mer_del[rfid][u'deleted'] and not u'Actors.SpellsForceAdd' in bashTags: continue
+                                    mer_del[rfid][u'merged'].append(spell)
                                 continue
                             for index, spell in enumerate(recordData[u'merged']):
-                                if spell not in mer_del[fid][u'merged']: # so needs to be added... (unless deleted that is)
+                                if spell not in mer_del[rfid][u'merged']: # so needs to be added... (unless deleted that is)
                                     # find the correct position to add and add.
-                                    if spell in mer_del[fid][u'deleted'] and not u'Actors.SpellsForceAdd' in bashTags: continue #previously deleted
+                                    if spell in mer_del[rfid][u'deleted'] and not u'Actors.SpellsForceAdd' in bashTags: continue #previously deleted
                                     if index == 0:
-                                        mer_del[fid][u'merged'].insert(0, spell) #insert as first item
+                                        mer_del[rfid][u'merged'].insert(0, spell) #insert as first item
                                     elif index == (len(recordData[u'merged'])-1):
-                                        mer_del[fid][u'merged'].append(spell) #insert as last item
+                                        mer_del[rfid][u'merged'].append(spell) #insert as last item
                                     else: #figure out a good spot to insert it based on next or last recognized item (ugly ugly ugly)
                                         i = index - 1
                                         while i >= 0:
-                                            if recordData[u'merged'][i] in mer_del[fid][u'merged']:
-                                                slot = mer_del[fid][u'merged'].index(recordData[u'merged'][i]) + 1
-                                                mer_del[fid][u'merged'].insert(slot, spell)
+                                            if recordData[u'merged'][i] in mer_del[rfid][u'merged']:
+                                                slot = mer_del[rfid][u'merged'].index(recordData[u'merged'][i]) + 1
+                                                mer_del[rfid][u'merged'].insert(slot, spell)
                                                 break
                                             i -= 1
                                         else:
                                             i = index + 1
                                             while i != len(recordData[u'merged']):
-                                                if recordData[u'merged'][i] in mer_del[fid][u'merged']:
-                                                    slot = mer_del[fid][u'merged'].index(recordData[u'merged'][i])
-                                                    mer_del[fid][u'merged'].insert(slot, spell)
+                                                if recordData[u'merged'][i] in mer_del[rfid][u'merged']:
+                                                    slot = mer_del[rfid][u'merged'].index(recordData[u'merged'][i])
+                                                    mer_del[rfid][u'merged'].insert(slot, spell)
                                                     break
                                                 i += 1
                                     continue # Done with this package
-                                elif index == mer_del[fid][u'merged'].index(spell) or (len(recordData[u'merged'])-index) == (len(mer_del[fid][u'merged'])-mer_del[fid][u'merged'].index(spell)): continue #spell same in both lists.
+                                elif index == mer_del[rfid][u'merged'].index(spell) or (len(recordData[u'merged'])-index) == (len(mer_del[rfid][u'merged'])-mer_del[rfid][u'merged'].index(spell)): continue #spell same in both lists.
                                 else: #this import is later loading so we'll assume it is better order
-                                    mer_del[fid][u'merged'].remove(spell)
+                                    mer_del[rfid][u'merged'].remove(spell)
                                     if index == 0:
-                                        mer_del[fid][u'merged'].insert(0, spell) #insert as first item
+                                        mer_del[rfid][u'merged'].insert(0, spell) #insert as first item
                                     elif index == (len(recordData[u'merged'])-1):
-                                        mer_del[fid][u'merged'].append(spell) #insert as last item
+                                        mer_del[rfid][u'merged'].append(spell) #insert as last item
                                     else:
                                         i = index - 1
                                         while i >= 0:
-                                            if recordData[u'merged'][i] in mer_del[fid][u'merged']:
-                                                slot = mer_del[fid][u'merged'].index(recordData[u'merged'][i]) + 1
-                                                mer_del[fid][u'merged'].insert(slot, spell)
+                                            if recordData[u'merged'][i] in mer_del[rfid][u'merged']:
+                                                slot = mer_del[rfid][u'merged'].index(recordData[u'merged'][i]) + 1
+                                                mer_del[rfid][u'merged'].insert(slot, spell)
                                                 break
                                             i -= 1
                                         else:
                                             i = index + 1
                                             while i != len(recordData[u'merged']):
-                                                if recordData[u'merged'][i] in mer_del[fid][u'merged']:
-                                                    slot = mer_del[fid][u'merged'].index(recordData[u'merged'][i])
-                                                    mer_del[fid][u'merged'].insert(slot, spell)
+                                                if recordData[u'merged'][i] in mer_del[rfid][u'merged']:
+                                                    slot = mer_del[rfid][u'merged'].index(recordData[u'merged'][i])
+                                                    mer_del[rfid][u'merged'].insert(slot, spell)
                                                     break
                                                 i += 1
             progress.plus()
@@ -560,10 +555,9 @@ class ImportActorsSpellsPatcher(ImportPatcher):
         merged_deleted = self.id_merged_deleted
         for top_grup_sig in self._read_sigs:
             patchBlock = self.patchFile.tops[top_grup_sig]
-            for record in modFile.tops[top_grup_sig].getActiveRecords():
-                fid = record.fid
-                if fid in merged_deleted:
-                    if record.spells != merged_deleted[fid][u'merged']:
+            for rfid, record in modFile.tops[top_grup_sig].iter_present_records():
+                if rfid in merged_deleted:
+                    if record.spells != merged_deleted[rfid][u'merged']:
                         patchBlock.setRecord(record.getTypeCopy())
 
     def buildPatch(self,log,progress): # buildPatch1:no modFileTops, for type..
@@ -573,17 +567,16 @@ class ImportActorsSpellsPatcher(ImportPatcher):
         merged_deleted = self.id_merged_deleted
         mod_count = Counter()
         for top_grup_sig in self._read_sigs:
-            for record in self.patchFile.tops[top_grup_sig].records:
-                fid = record.fid
-                if fid not in merged_deleted: continue
+            for rfid, record in self.patchFile.tops[top_grup_sig].iter_present_records():
+                if rfid not in merged_deleted: continue
                 changed = False
-                mergedSpells = sorted(merged_deleted[fid][u'merged'])
+                mergedSpells = sorted(merged_deleted[rfid][u'merged'])
                 if sorted(record.spells) != mergedSpells:
                     record.spells = mergedSpells
                     changed = True
                 if changed:
-                    keep(record.fid)
-                    mod_count[record.fid[0]] += 1
+                    keep(rfid)
+                    mod_count[rfid[0]] += 1
         self.id_merged_deleted.clear()
         self._patchLog(log,mod_count)
 
@@ -687,8 +680,8 @@ class _AListsMerger(ListPatcher):
         #--PreScan for later Relevs/Delevs?
         if sc_name in self.de_masters:
             for list_type_sig in self._read_sigs:
-                for de_list in modFile.tops[list_type_sig].getActiveRecords():
-                    self.masterItems[de_list.fid][sc_name] = set(
+                for rfid, de_list in modFile.tops[list_type_sig].iter_present_records():
+                    self.masterItems[rfid][sc_name] = set(
                         self._get_entries(de_list))
         #--Relev/Delev setup
         applied_tags = self.tag_choices[sc_name]
@@ -698,8 +691,8 @@ class _AListsMerger(ListPatcher):
         for list_type_sig in self._read_sigs:
             stored_lists = self.type_list[list_type_sig]
             new_lists = modFile.tops[list_type_sig]
-            for new_list in new_lists.getActiveRecords():
-                list_fid = new_list.fid
+            for rfid, new_list in new_lists.iter_present_records():
+                list_fid = rfid
                 # FIXME(inf) This is hideous and slows everything down
                 if (sc_name == u'Unofficial Oblivion Patch.esp' and
                         list_fid in self.OverhaulUOPSkips):
@@ -894,9 +887,9 @@ class ImportRacesSpellsPatcher(ImportPatcher):
                     u'WARNING mod %s has both R.AddSpells and R.ChangeSpells '
                     u'tags - only one of those tags should be on a mod at '
                     u'one time' % srcMod)
-            for race in srcFile.tops[b'RACE'].getActiveRecords():
-                tempRaceData = tmp_race_data[race.fid]
-                raceData = self.raceData[race.fid]
+            for rfid, race in srcFile.tops[b'RACE'].iter_present_records():
+                tempRaceData = tmp_race_data[rfid]
+                raceData = self.raceData[rfid]
                 if u'R.AddSpells' in bashTags:
                     tempRaceData[u'AddSpells'] = race.spells
                 if u'R.ChangeSpells' in bashTags:
@@ -910,10 +903,10 @@ class ImportRacesSpellsPatcher(ImportPatcher):
                     masterFile = self._mod_file_read(masterInfo)
                     if b'RACE' not in masterFile.tops: continue
                     cachedMasters[master] = masterFile
-                for race in masterFile.tops[b'RACE'].getActiveRecords():
-                    if race.fid not in tmp_race_data: continue
-                    tempRaceData = tmp_race_data[race.fid]
-                    raceData = self.raceData[race.fid]
+                for rfid, race in masterFile.tops[b'RACE'].iter_present_records():
+                    if rfid not in tmp_race_data: continue
+                    tempRaceData = tmp_race_data[rfid]
+                    raceData = self.raceData[rfid]
                     if u'AddSpells' in tempRaceData:
                         raceData.setdefault(u'AddSpells', []) ##: set?
                         for spell in tempRaceData[u'AddSpells']:
@@ -930,8 +923,8 @@ class ImportRacesSpellsPatcher(ImportPatcher):
         if b'RACE' not in modFile.tops: return
         patchBlock = self.patchFile.tops[b'RACE']
         id_records = patchBlock.id_records
-        for record in modFile.tops[b'RACE'].getActiveRecords():
-            if record.fid not in id_records:
+        for rfid, record in modFile.tops[b'RACE'].iter_present_records():
+            if rfid not in id_records:
                 patchBlock.setRecord(record.getTypeCopy())
 
     def buildPatch(self, log, progress):
@@ -939,8 +932,8 @@ class ImportRacesSpellsPatcher(ImportPatcher):
         if b'RACE' not in patchFile.tops: return
         keep = patchFile.getKeeper()
         racesPatched = []
-        for race in patchFile.tops[b'RACE'].records:
-            raceData = self.raceData.get(race.fid, None)
+        for rfid, race in patchFile.tops[b'RACE'].iter_present_records():
+            raceData = self.raceData.get(rfid, None)
             if not raceData: continue
             orig_spells = race.spells[:]
             if u'spellsOverride' in raceData:
@@ -951,7 +944,7 @@ class ImportRacesSpellsPatcher(ImportPatcher):
             #--Changed
             if race.spells != orig_spells:
                 racesPatched.append(race.eid)
-                keep(race.fid)
+                keep(rfid)
         #--Done
         log.setHeader(u'= ' + self._patcher_name)
         self._srcMods(log)
