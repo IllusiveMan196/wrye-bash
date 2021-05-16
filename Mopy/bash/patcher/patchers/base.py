@@ -242,9 +242,9 @@ class ReplaceFormIDsPatcher(FidReplacer, ListPatcher):
         patchCells = self.patchFile.tops[b'CELL']
         patchWorlds = self.patchFile.tops[b'WRLD']
 ##        for top_grup_sig in MreRecord.simpleTypes:
-##            for record in modFile.tops[top_grup_sig].getActiveRecords():
+##            for rfid, record in modFile.tops[top_grup_sig].iter_present_records():
 ##                record = record.getTypeCopy(mapper)
-##                if record.fid in self.old_new:
+##                if rfid in self.old_new:
 ##                    self.patchFile.tops[top_grup_sig].setRecord(record)
         if b'CELL' in modFile.tops:
             for cellBlock in modFile.tops[b'CELL'].cellBlocks:
@@ -345,13 +345,13 @@ class ReplaceFormIDsPatcher(FidReplacer, ListPatcher):
             newId = old_new.get(oldId,None)
             return newId if newId else oldId
 ##        for type in MreRecord.simpleTypes:
-##            for record in self.patchFile.tops[type].getActiveRecords():
-##                if record.fid in self.old_new:
-##                    record.fid = swapper(record.fid)
-##                    count.increment(record.fid[0])
+##            for rfid, record in self.patchFile.tops[type].iter_present_records():
+##                if rfid in self.old_new:
+##                    rfid = swapper(rfid)
+##                    count.increment(rfid[0])
 ####                    record.mapFids(swapper,True)
 ##                    record.setChanged()
-##                    keep(record.fid)
+##                    keep(rfid)
         for cellBlock in self.patchFile.tops[b'CELL'].cellBlocks:
             cfid = cellBlock.cell.fid
             for record in cellBlock.temp_refs:

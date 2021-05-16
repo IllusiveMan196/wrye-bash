@@ -366,9 +366,9 @@ class ImportTextPatcher(APreserver):
 #------------------------------------------------------------------------------
 # Patchers to absorb ----------------------------------------------------------
 #------------------------------------------------------------------------------
-##: absorbing this one will be hard - hint: getActiveRecords only exists on
+##: absorbing this one will be hard - hint: getActiveRecords ~~only exists~~ on
 # MobObjects, iter_records works for all Mob* classes, so attack that part of
-# _APreserver
+# _APreserver # TODO: getActiveRecords is gone - can be done?
 class ImportCellsPatcher(ImportPatcher):
     logMsg = u'\n=== ' + _(u'Cells/Worlds Patched')
     _read_sigs = (b'CELL', b'WRLD')

@@ -231,10 +231,6 @@ class MobObjects(MobBase):
             recordsAppend(recClass(header, ins, True))
         self.setChanged()
 
-    def getActiveRecords(self):
-        """Returns non-ignored records."""
-        return [record for record in self.records if not record.flags1.ignored]
-
     def getNumRecords(self,includeGroups=True):
         """Returns number of records, including self - if empty return 0."""
         numRecords = len(self.records)

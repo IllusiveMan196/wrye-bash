@@ -266,7 +266,7 @@ class PatchFile(ModFile):
         """Scans file and overwrites own records with modfile records."""
         #--Keep all MGEFs
         if b'MGEF' in modFile.tops:
-            for record in modFile.tops[b'MGEF'].getActiveRecords():
+            for rfid_, record in modFile.tops[b'MGEF'].iter_present_records():
                 self.tops[b'MGEF'].setRecord(record.getTypeCopy())
         #--Merger, override.
         for block_type in set(self.tops) & set(modFile.tops):
