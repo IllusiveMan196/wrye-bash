@@ -164,12 +164,11 @@ class CoblExhaustionPatcher(_ExSpecialList):
         exhaustId = (cobl_main, 0x05139B)
         keep = self.patchFile.getKeeper()
         id_info_ = self.id_stored_data[b'FACT']
-        for record in self.patchFile.tops[b'SPEL'].records:
+        for rfid, record in self.patchFile.tops[b'SPEL'].iter_present_records():
             ##: Skips OBME records - rework to support them
             if record.obme_record_version is not None: continue
             #--Skip this one?
-            rec_fid = record.fid
-            duration = id_info_.get(rec_fid, 0)
+            duration = id_info_.get(rfid, 0)
             if not (duration and record.spellType == 2): continue
             isExhausted = False ##: unused, was it supposed to be used?
             for effect in record.effects:
@@ -192,8 +191,8 @@ class CoblExhaustionPatcher(_ExSpecialList):
             scriptEffect.flags.hostile = False
             effect.scriptEffect = scriptEffect
             record.effects.append(effect)
-            keep(rec_fid)
-            count[rec_fid[0]] += 1
+            keep(rfid)
+            count[rfid[0]] += 1
         #--Log
         self._pLog(log, count)
 
