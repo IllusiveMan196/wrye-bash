@@ -571,6 +571,17 @@ class ActorLevels(_HandleAliases):
         attr_dex[u'flags.pcLevelOffset'] = True
         self.mod_id_levels[source][lfid] = attr_dex
 
+    def _key1(self, csv_fields):
+        source = csv_fields[0]
+        if source.lower() in self._skip_mods: raise ValueError # exit _parse_line
+        return source
+
+    def _key2(self, csv_fields):
+        fidMod = csv_fields[2]
+        if fidMod.lower() == u'none':
+            raise ValueError # exit _parse_line
+        return super(ActorLevels, self)._key2(csv_fields)
+
     def _write_rows(self, out, __getter=itemgetter(u'eid',
             u'flags.pcLevelOffset', u'level_offset', u'calcMin', u'calcMax')):
         """Export NPC level data to specified text file."""
