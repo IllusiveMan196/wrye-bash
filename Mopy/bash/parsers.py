@@ -513,10 +513,11 @@ class ActorLevels(_HandleAliases):
         _(u'Old CalcMax'))
     _row_fmt_str = u'"%s","%s","%s","0x%06X","%d","%d","%d"'
     _parser_sigs = [b'NPC_']
+    _key2_indexes = (2, 3)
 
     def __init__(self, aliases_=None, called_from_patcher=False):
         super(ActorLevels, self).__init__(aliases_, called_from_patcher)
-        self.mod_id_levels = defaultdict(dict) #--levels = mod_id_levels[mod][longid]
+        self.id_stored_data = defaultdict(dict) #--levels = id_stored_data[mod][longid]
         self.gotLevels = set()
         self._skip_mods = {u'none', bush.game.master_file.lower()}
         self._attr_dex = {u'eid': 1, u'level_offset': 4, u'calcMin': 5,
@@ -525,7 +526,7 @@ class ActorLevels(_HandleAliases):
     def readFromMod(self,modInfo):
         """Imports actor level data from the specified mod and its masters."""
         from . import bosh
-        mod_id_levels, gotLevels = self.mod_id_levels, self.gotLevels
+        mod_id_levels, gotLevels = self.id_stored_data, self.gotLevels
         loadFactory = self._load_factory(keepAll=False)
         for modName in (modInfo.masterNames + (modInfo.ci_key,)):
             if modName in gotLevels: continue
@@ -541,11 +542,15 @@ class ActorLevels(_HandleAliases):
 
     def writeToMod(self, modInfo):
         """Exports actor levels to specified mod."""
-        id_levels = self.mod_id_levels.get(modInfo.ci_key,
-            self.mod_id_levels.get(GPath(u'Unknown'), None))
+        id_levels = self.id_stored_data.get(modInfo.ci_key,
+            self.id_stored_data.get(GPath(u'Unknown'), None))
         if id_levels:
+            # pretend we are a normal parser
+            real = self.id_stored_data
             self.id_stored_data = {b'NPC_': id_levels}
-            return super(ActorLevels, self).writeToMod(modInfo)
+            changed = super(ActorLevels, self).writeToMod(modInfo)
+            self.id_stored_data = real
+            return changed
         return 0
 
     _changed_type = list
@@ -562,14 +567,10 @@ class ActorLevels(_HandleAliases):
     def _additional_processing(self, changed, modFile):
         return len(changed)
 
-    def _parse_line(self, csv_fields):
-        source, fidMod = csv_fields[0], csv_fields[2]
-        if (source.lower() in self._skip_mods) or fidMod.lower() == u'none':
-            return
-        lfid = self._coerce_fid(fidMod, csv_fields[3])
-        attr_dex = self._update_from_csv(b'NPC_', csv_fields)
+    def _update_from_csv(self, top_grup_sig, csv_fields, index_dict=None):
+        attr_dex = super(ActorLevels, self)._update_from_csv(b'NPC_', csv_fields)
         attr_dex[u'flags.pcLevelOffset'] = True
-        self.mod_id_levels[source][lfid] = attr_dex
+        return attr_dex
 
     def _key1(self, csv_fields):
         source = csv_fields[0]
@@ -588,8 +589,8 @@ class ActorLevels(_HandleAliases):
         extendedRowFormat = u',"%d","%d","%d","%d"\n'
         blankExtendedRow = u',,,,\n'
         #Sorted based on mod, then editor ID
-        obId_levels = self.mod_id_levels[GPath(bush.game.master_file)]
-        for mod, id_levels in _key_sort(self.mod_id_levels):
+        obId_levels = self.id_stored_data[GPath(bush.game.master_file)]
+        for mod, id_levels in _key_sort(self.id_stored_data):
             if mod.s.lower() == bush.game.master_file.lower(): continue
             sor = _key_sort(id_levels, keys_dex=[0], values_key=u'eid')
             for longfid, di in sor:
