@@ -208,7 +208,7 @@ class MorphFactionsPatcher(_ExSpecialList):
     _csv_key = u'MFact'
     _config_key = u'MFactMarker'
     _read_sigs = (b'FACT',)
-    _id_indexes = (0, 1)
+    _key2_indexes = (0, 1)
 
     def _pLog(self, log, changed):
         log.setHeader(u'= ' + self._patcher_name)

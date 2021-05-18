@@ -189,7 +189,7 @@ class _HandleAliases(CsvParser):
     """WIP aliases handling."""
     _parser_sigs = [] # record signatures this parser recognises
     # the indexes of the csv fields that will create the id in id_stored_data
-    _id_indexes = ()
+    _key2_indexes = ()
     # the index of the csv field that contains the group type
     _grup_index = None
 
@@ -211,15 +211,24 @@ class _HandleAliases(CsvParser):
         return GPath(self.aliases.get(modname, modname)), int(hex_fid, 0)
 
     def _parse_line(self, csv_fields):
+        key1 = self._key1(csv_fields)
+        key2 = self._key2(csv_fields)
+        value = self._update_from_csv(key1, csv_fields)
+        if value is not None:
+            self.id_stored_data[key1][key2] = value
+        return key1, key2
+
+    def _key1(self, csv_fields):
         if self._grup_index is not None:
             top_grup_sig = csv_fields[self._grup_index].encode(u'ascii')
         else:
             top_grup_sig = self._parser_sigs[0] # one rec type
-        longid = self._coerce_fid(csv_fields[self._id_indexes[0]],
-                                  csv_fields[self._id_indexes[1]])
-        self.id_stored_data[top_grup_sig][longid] = self._update_from_csv(
-            top_grup_sig, csv_fields)
-        return top_grup_sig, longid
+        return top_grup_sig
+
+    def _key2(self, csv_fields):
+        longid = self._coerce_fid(csv_fields[self._key2_indexes[0]],
+                                  csv_fields[self._key2_indexes[1]])
+        return longid
 
     def readFromMod(self, modInfo):
         """Hasty readFromMod implementation."""
@@ -434,6 +443,8 @@ class ActorFactions(_AParser):
                    _(u'Actor Object'), _(u'Faction Eid'), _(u'Faction Mod'),
                    _(u'Faction Object'), _(u'Rank'))
     _row_fmt_str = u'"%s","%s","%s","0x%06X","%s","%s","0x%06X","%s"\n'
+    _grup_index = 0
+    _key2_indexes = (2, 3)
 
     def __init__(self, aliases_=None, called_from_patcher=False):
         super(ActorFactions, self).__init__(aliases_, called_from_patcher)
@@ -473,19 +484,18 @@ class ActorFactions(_AParser):
             target_entry.rank = rank
             target_entry.unused1 = b'ODB'
 
-    def _parse_line(self, csv_fields):
-        top_grup, _aed, amod, aobj, _fed, fmod, fobj, rank = csv_fields[:8]
-        aid = self._coerce_fid(amod, aobj)
-        lfid = self._coerce_fid(fmod, fobj)
-        rank = int(rank)
-        top_grup_sig = top_grup.encode(u'ascii')
+    def _update_from_csv(self, top_grup_sig, csv_fields, index_dict=None):
+        lfid = self._coerce_fid(csv_fields[5], csv_fields[6])
+        rank = int(csv_fields[7])
         if self._called_from_patcher:
             ret_obj = MreRecord.type_class[top_grup_sig].getDefault(u'factions')
             ret_obj.faction = lfid
             ret_obj.rank = rank
+            aid = self._key2(csv_fields) # FIXME pass key2 ?
             self.id_stored_data[top_grup_sig][aid][u'factions'].append(ret_obj)
+            return None
         else:
-            self.id_stored_data[top_grup_sig][aid][lfid] = rank
+            return {lfid: rank}
 
     def _write_row(self, out, top_grup, aid, stored_data):
         """Exports faction data to specified text file."""
@@ -592,7 +602,7 @@ class EditorIds(_HandleAliases):
     _csv_header = (_(u'Type'), _(u'Mod Name'), _(u'ObjectIndex'),
                    _(u'Editor Id'))
     _row_fmt_str = u'"%s","%s","0x%06X","%s"\n'
-    _id_indexes = (1, 2)
+    _key2_indexes = (1, 2)
     _grup_index = 0
     _attr_dex = {u'eid': 3}
 
@@ -824,7 +834,7 @@ class FullNames(_HandleAliases):
     _csv_header = (_(u'Type'), _(u'Mod Name'), _(u'ObjectIndex'),
                    _(u'Editor Id'), _(u'Name'))
     _row_fmt_str = u'"%s","%s","0x%06X","%s","%s"\n'
-    _id_indexes = (1, 2)
+    _key2_indexes = (1, 2)
     _grup_index = 0
 
     def __init__(self, aliases_=None, called_from_patcher=False):
@@ -1268,7 +1278,7 @@ class ItemPrices(_HandleAliases):
     _csv_header = (_(u'Mod Name'), _(u'ObjectIndex'), _(u'Value'),
                    _(u'Editor Id'), _(u'Name'), _(u'Type'))
     _row_fmt_str = u'"%s","0x%06X","%d","%s","%s",%s\n'
-    _id_indexes = (0, 1)
+    _key2_indexes = (0, 1)
     _grup_index = 5
     _attr_dex = {u'value': 2, u'eid': 3, u'full': 4}
 
