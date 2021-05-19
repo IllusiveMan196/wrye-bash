@@ -301,7 +301,7 @@ class _WindowsStoreFinder(object):
                 with winreg.OpenKey(families_key, package_name) as family_key:
                     num_families = winreg.QueryInfoKey(family_key)[0]
                     return [winreg.EnumKey(family_key, i)
-                            for i in xrange(num_families)]
+                            for i in range(num_families)]
         except WindowsError:
             # Windows version without apps, or not installed
             return []
@@ -415,7 +415,7 @@ class _GUID(Structure):
         super(_GUID, self).__init__()
         self.Data1, self.Data2, self.Data3, self.Data4[0], self.Data4[1], \
         rest = uuid_.fields
-        for i in xrange(2, 8):
+        for i in range(2, 8):
             self.Data4[i] = rest>>(8 - i - 1)*8 & 0xff
 
 # http://msdn.microsoft.com/en-us/library/windows/desktop/dd378457.aspx

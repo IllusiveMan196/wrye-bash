@@ -345,7 +345,7 @@ def _process_path(file_path):
             child_components.append(path_component)
     relative_path = bass.dirs[u'mods']
     # Move up by the number of requested parents
-    for x in xrange(parents):
+    for x in range(parents):
         relative_path = relative_path.head
     # If that put us outside the game folder, the path is invalid
     if not os.path.realpath(relative_path.s).startswith(bass.dirs[u'app'].s):
