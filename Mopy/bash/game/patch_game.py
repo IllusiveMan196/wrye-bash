@@ -93,7 +93,6 @@ class PatchGame(GameInfo):
         u'nonplayable_biped_flags', u'not_playable_flag', u'body_part_codes',
         u'object_bounds_types', u'pricesTypes', u'race_tweaks',
         u'race_tweaks_need_collection', u'relations_attrs',
-        u'relations_csv_row_format',
         u'save_rec_types', u'scripts_types', u'settings_tweaks',
         u'soundsLongsTypes', u'soundsTypes', u'spell_stats_attrs',
         u'spell_stats_types', u'staff_condition',
@@ -229,7 +228,6 @@ class PatchGame(GameInfo):
     # Import Relations
     #--------------------------------------------------------------------------
     relations_attrs = ()
-    relations_csv_row_format = u''
 
     #--------------------------------------------------------------------------
     # Import Enchantment Stats

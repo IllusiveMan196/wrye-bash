@@ -716,7 +716,6 @@ class FactionRelations(_AParser):
     """Parses the relations between factions. Can read and write both plugins
     and CSV, and uses two passes to do so."""
     cls_rel_attrs = bush.game.relations_attrs
-    _row_fmt_str = bush.game.relations_csv_row_format
 
     def __init__(self, aliases_=None, called_from_patcher=False):
         super(FactionRelations, self).__init__(aliases_, called_from_patcher)
@@ -777,8 +776,11 @@ class FactionRelations(_AParser):
         rel, main_eid = stored_data
         for oth_fid, (relation_obj, oth_eid) in _key_sort(rel,
                                                           **self._sort_args):
-            out.write(self._row_fmt_str % (
-                main_eid, *main_fid, oth_eid, *oth_fid, *relation_obj))
+            row_vals = u'"%s","%s","0x%06X","%s","%s","0x%06X",%s\n' % (
+                main_eid, *main_fid, oth_eid, *oth_fid, u','.join(
+                    attr_csv_struct[a][2](x) for a, x in
+                    zip(self.__class__.cls_rel_attrs[1:], relation_obj)))
+            out.write(row_vals)
 
 #------------------------------------------------------------------------------
 class FidReplacer(_HandleAliases):

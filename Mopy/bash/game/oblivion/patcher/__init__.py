@@ -682,7 +682,6 @@ settings_tweaks = {
 # Import Relations
 #------------------------------------------------------------------------------
 relations_attrs = (u'faction', u'mod') ##: mod?
-relations_csv_row_format = u'"%s","%s","0x%06X","%s","%s","0x%06X","%s"\n'
 
 #------------------------------------------------------------------------------
 # Import Enchantment Stats
