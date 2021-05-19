@@ -269,7 +269,7 @@ class CheckListBox(ListBox, WithCharEvents):
         discards the current scroll position."""
         with self.pause_drawing():
             self.lb_clear()
-            for i, (k, v) in enumerate(izip(all_keys, all_values)):
+            for i, (k, v) in enumerate(zip(all_keys, all_values)):
                 self.lb_append(k)
                 self.lb_check_at_index(i, v)
 
@@ -284,7 +284,7 @@ class CheckListBox(ListBox, WithCharEvents):
             self.lb_clear()
             return
         with self.pause_drawing():
-            for index, (lab, ch) in enumerate(izip(names, checkmarks)):
+            for index, (lab, ch) in enumerate(zip(names, checkmarks)):
                 if index >= self.lb_get_items_count():
                     self.lb_append(lab)
                 else:

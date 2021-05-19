@@ -393,7 +393,7 @@ class FileInfo(AFile, ListInfo):
                 # if cosave exists while its backup not, delete it on restoring
                 tup[1].remove()
                 backup_paths.remove(tup)
-        env.shellCopy(*list(izip(*backup_paths)))
+        env.shellCopy(*list(zip(*backup_paths)))
         # do not change load order for timestamp games - rest works ok
         self.setmtime(self._file_mod_time, crc_changed=True)
         self.get_store().new_info(self.ci_key, notify_bain=True)
@@ -451,7 +451,7 @@ class FileInfo(AFile, ListInfo):
         # all_backup_paths will return the backup paths for this file and its
         # satellites (like cosaves). Passing newName in it returns the rename
         # destinations of the backup paths. Backup paths may not exist.
-        for b_path, new_b_path in izip(self.all_backup_paths(),
+        for b_path, new_b_path in zip(self.all_backup_paths(),
                                        self.all_backup_paths(newName)):
             old_new_paths.append((b_path, new_b_path))
         return old_new_paths
@@ -897,7 +897,7 @@ class ModInfo(FileInfo):
                     raise ModError(self.ci_key,
                                    u'Could not extract Strings File from '
                                    u"'%s': %s" % (bsa_inf, e))
-                paths.update(imap(out_path.join, assets))
+                paths.update(map(out_path.join, assets))
         return paths
 
     # Heuristics for _find_string_bsas. Patch before interface because the
@@ -1346,7 +1346,7 @@ class SaveInfo(FileInfo):
         # FO4/SSE _get_masters() returns the correct interleaved order, but
         # oldMasters has the 'regular first, then ESLs' order
         master_map = {x.s: y.s for x, y in
-                      izip(oldMasters, self.header.masters) if x != y}
+                      zip(oldMasters, self.header.masters) if x != y}
         if master_map:
             for co_file in self._co_saves.values():
                 co_file.remap_plugins(master_map)
@@ -1504,7 +1504,7 @@ class DataStore(DataDict):
             # saves) shellMove will offer to skip and raise SkipError
             if tup[0] == tup[1] or not tup[0].exists():
                 rename_paths.remove(tup)
-        env.shellMove(*list(izip(*rename_paths)))
+        env.shellMove(*list(zip(*rename_paths)))
         return rename_paths[0][0].tail
 
     @property
@@ -3280,7 +3280,7 @@ class SaveInfos(FileInfos):
         # to unhide and pass that in
         moved = super(SaveInfos, self).move_infos(sources, destinations,
                                                   window, bash_frame)
-        for s, d in izip(sources, destinations):
+        for s, d in zip(sources, destinations):
             if d.tail in moved:
                 self._co_copy_or_move(s, d, pathFunc=Path.moveTo)
         for d in moved:
