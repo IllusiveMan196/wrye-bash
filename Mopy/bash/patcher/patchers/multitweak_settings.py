@@ -195,7 +195,7 @@ class _AGmstTweak(_ASettingsTweak):
         if len(self.choiceLabels) > 1:
             chosen_label = self.choiceLabels[self.chosen]
             if chosen_label == self.custom_choice:
-                if isinstance(self.chosen_values[0], unicode):
+                if isinstance(self.chosen_values[0], str):
                     log(u'* %s: %s %s' % (self.tweak_name, chosen_label,
                                           self.chosen_values[0]))
                 else:

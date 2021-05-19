@@ -110,7 +110,7 @@ class APreserver(ImportPatcher):
         # Filter out any entries that don't actually have data or don't
         # actually exist (for this game at least)
         ##: make sure k is always bytes and drop encode below
-        filtered_dict = {k.encode(u'ascii') if type(k) is unicode else k: v
+        filtered_dict = {k.encode(u'ascii') if type(k) is str else k: v
                          for k, v in parsed_sources.items()
                          if v and k in MreRecord.type_class}
         self.srcs_sigs.update(filtered_dict)
@@ -559,8 +559,8 @@ class ImportGraphicsPatcher(APreserver):
             if rfid not in id_data: continue
             for attr, value in id_data[rfid].items():
                 rec_attr = __attrgetters[attr](record)
-                if isinstance(rec_attr, unicode) and isinstance(
-                        value, unicode):
+                if isinstance(rec_attr, str) and isinstance(
+                        value, str):
                     if rec_attr.lower() != value.lower():
                         break
                     continue

@@ -76,7 +76,7 @@ class _CsvReader(object):
 
     def __iter__(self):
         for row in self.reader:
-            yield [unicode(x, u'utf8') for x in row]
+            yield [str(x, u'utf8') for x in row]
 
     def close(self):
         self.reader = None

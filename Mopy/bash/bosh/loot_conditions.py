@@ -102,7 +102,7 @@ class ConditionFunc(_ACondition):
     def __repr__(self):
         fmt_args = []
         for a in self.func_args:
-            if isinstance(a, unicode): # String
+            if isinstance(a, str): # String
                 fmt_a = u'"%s"' % a
             elif isinstance(a, (int, int)): # Checksum
                 fmt_a = u'%X' % a
@@ -250,7 +250,7 @@ def _fn_product_version(file_path, expected_ver, comparison):
         if file_path.cext in (u'.exe', u'.dll'):
             # Read version from executable fields
             actual_ver = LooseVersion(u'.'.join(
-                unicode(s) for s in get_file_version(file_path.s)))
+                str(s) for s in get_file_version(file_path.s)))
         else:
             raise FileError(file_path.s, u'Product version query was '
                                          u'requested, but the file is not an '
@@ -283,7 +283,7 @@ def _fn_version(file_path, expected_ver, comparison):
         elif file_path.cext in (u'.exe', u'.dll'):
             # Read version from executable fields
             actual_ver = LooseVersion(u'.'.join(
-                unicode(s) for s in get_file_version(file_path.s)))
+                str(s) for s in get_file_version(file_path.s)))
         else:
             raise FileError(file_path.s, u'Version query was requested, but '
                                          u'the file is not a plugin or '

@@ -65,7 +65,7 @@ class InstallerFomod(WizardDialog):
                 gver = env.get_game_version_fallback(test_path, bush.ws_info)
         except OSError:
             gver = env.get_game_version_fallback(test_path, bush.ws_info)
-        version_string = u'.'.join([unicode(i) for i in gver])
+        version_string = u'.'.join([str(i) for i in gver])
         self.fomod_parser = FomodInstaller(
             fm_file, self.files_list, self.installer_root, bass.dirs[u'mods'],
             version_string)
@@ -454,7 +454,7 @@ class PageFinish(PageInstaller):
     def display_files(file_dict):
         if not file_dict: return u''
         lines = [u'{} -> {}'.format(v, k) for k, v in file_dict.items()]
-        lines.sort(key=unicode.lower)
+        lines.sort(key=str.lower)
         return u'\n'.join(lines)
 
 # Some links for easier mass (de)selection of options

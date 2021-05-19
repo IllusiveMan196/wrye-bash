@@ -505,7 +505,7 @@ def checkMods(mc_parent, showModList=False, showCRC=False, showVersion=True,
         # Always an ASCII byte string, so this is fine
         p_header_sig = bush.game.Esp.plugin_header_sig.decode(u'ascii')
         ver_list = u', '.join(
-            sorted(unicode(v) for v in bush.game.Esp.validHeaderVersions))
+            sorted(str(v) for v in bush.game.Esp.validHeaderVersions))
         log.setHeader(u'=== ' + _(u'Invalid %s versions') % p_header_sig)
         log(_(u"The following plugins have a %s version that isn't "
               u'recognized as one of the standard versions (%s). This is '
