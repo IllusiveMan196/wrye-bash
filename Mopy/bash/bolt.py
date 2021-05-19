@@ -1528,6 +1528,11 @@ class DataTableColumn(object):
         tableData = self._table._data
         column = self.column
         return (tableData[k][column] for k in self)
+    def items(self):
+        """Dictionary emulation."""
+        tableData = self._table._data
+        column = self.column
+        return ((k, tableData[k][column]) for k in self)
     def clear(self):
         """Dictionary emulation."""
         self._table.delColumn(self.column)
