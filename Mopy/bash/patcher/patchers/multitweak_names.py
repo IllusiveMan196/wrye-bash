@@ -381,7 +381,7 @@ class NamesTweak_Ingestibles_Fo3(_ANamesTweak_Ingestibles):
     # we just show the equipment type
     _example_item = _(u'Radroach Meat')
     _example_code = u'F'
-    _valid_ingestibles = set(xrange(10, 14))
+    _valid_ingestibles = set(range(10, 14))
 
     def _exec_rename(self, record):
         alch_etyp = record.equipment_type
@@ -522,7 +522,7 @@ class NamesTweak_Weapons_Tes4(_ANamesTweak_Weapons):
     _example_item = _(u'Elven Bow')
     _example_code = u'B'
     _example_stat = 14
-    _valid_weapons = set(xrange(0, 5))
+    _valid_weapons = set(range(0, 5))
     _w_type_attr = u'weaponType'
 
     def _exec_rename(self, record):
@@ -546,7 +546,7 @@ class NamesTweak_Weapons_Fo3(_ANamesTweak_Weapons):
     _example_item = _(u'BB Gun')
     _example_code = u'S'
     _example_stat = 10
-    _valid_weapons = set(xrange(0, 7))
+    _valid_weapons = set(range(0, 7))
     _w_type_attr = u'equipment_type'
 
     def _exec_rename(self, record):

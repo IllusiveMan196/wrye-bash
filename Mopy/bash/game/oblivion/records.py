@@ -1387,8 +1387,8 @@ class MreNpc(MreActorBase):
         MelAnimations(),
         MelFid(b'CNAM','iclass'),
         MelNpcData(b'DATA', [u'21B', u'H', u'2s', u'8B'],
-                   (u'skills', [0 for _x in xrange(21)]), u'health',
-                   u'unused2', (u'attributes', [0 for _y in xrange(8)])),
+                   (u'skills', [0 for _x in range(21)]), u'health',
+                   u'unused2', (u'attributes', [0 for _y in range(8)])),
         MelFid(b'HNAM', 'hair'),
         MelFloat(b'LNAM', u'hairLength'),
         ##: This is a FormID array in xEdit, but I haven't found any NPC_
