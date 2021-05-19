@@ -329,8 +329,7 @@ class InstallerConverter(object):
                 _dump(self.persistBCF, f)
                 _dump(self._converter_settings + self.volatile + self.addedSettings, f)
         except Exception as e:
-            raise StateError, (u'Error creating BCF.dat:\nError: %s' % e), \
-                sys.exc_info()[2]
+            raise StateError(u'Error creating BCF.dat:\nError: %s' % e).with_traceback(sys.exc_info()[2])
 
     def apply(self, destArchive, crc_installer, progress=None, embedded=0):
         """Applies the BCF and packages the converted archive"""
@@ -582,8 +581,8 @@ class InstallerConverter(object):
             with tempList.open(u'w', encoding=u'utf-8-sig') as out:
                 out.write(u'\n'.join(fileNames))
         except Exception as e:
-            raise StateError, (u'Error creating file list for 7z:\nError: %s'
-                               % e), sys.exc_info()[2]
+            raise StateError(u'Error creating file list for 7z:\nError: %s'
+                               % e).with_traceback(sys.exc_info()[2])
         #--Determine settings for 7z
         installerCRC = srcInstaller.crc
         apath = srcInstaller if isinstance(srcInstaller,
