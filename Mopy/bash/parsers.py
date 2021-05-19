@@ -716,15 +716,17 @@ class FactionRelations(_AParser):
     """Parses the relations between factions. Can read and write both plugins
     and CSV, and uses two passes to do so."""
     cls_rel_attrs = bush.game.relations_attrs
-    _csv_header = bush.game.relations_csv_header
     _row_fmt_str = bush.game.relations_csv_row_format
 
     def __init__(self, aliases_=None, called_from_patcher=False):
         super(FactionRelations, self).__init__(aliases_, called_from_patcher)
-        self._fp_types = (b'FACT',) if not self._called_from_patcher else ()
+        self._fp_types = () if self._called_from_patcher else (b'FACT',)
         self._sp_types = (b'FACT',)
         self._needs_fp_master_sort = True
         self._sort_args = dict(id_eid_=self.id_context)
+        self._csv_header = (_(u'Main Eid'), _(u'Main Mod'), _(u'Main Object'),
+            _(u'Other Eid'), _(u'Other Mod'), _(u'Other Object')) + tuple( # first attr is faction
+            attr_csv_struct[a][1] for a in self.__class__.cls_rel_attrs[1:])
 
     def _read_record_fp(self, record):
         # Gather the latest value for the EID matching the FID
