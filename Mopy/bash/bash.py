@@ -63,13 +63,9 @@ def _early_setup(debug):
         # Also, setup stdout/stderr to the debug log if debug mode /
         # standalone before wxPython is up
         global _bugdump_handle
-        # PY3: Replace with this
-        # _bugdump_handle = io.open(
-        #     os.path.join(os.getcwdu(), u'BashBugDump.log'), u'w', buffering=1,
-        #     encoding=u'utf-8')
-        _bugdump_handle = codecs.getwriter(u'utf-8')(
-            open(os.path.join(os.getcwd(), u'BashBugDump.log'), u'w',
-                 buffering=0))
+        _bugdump_handle = open(
+            os.path.join(os.getcwd(), u'BashBugDump.log'), u'w', buffering=1,
+            encoding=u'utf-8')
         sys.stdout = _bugdump_handle
         sys.stderr = _bugdump_handle
 
