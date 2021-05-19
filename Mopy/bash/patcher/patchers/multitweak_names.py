@@ -610,7 +610,7 @@ class NamesTweak_AmmoWeight_Fo3(NamesTweak_AmmoWeight_Fnv, IndexingTweak):
         super(NamesTweak_AmmoWeight_Fo3, self).prepare_for_tweaking(patch_file)
         # Gather weight from FWE FormID Lists
         self._look_up_weight = luw = defaultdict(lambda: 0.0)
-        for flst_rec in self._indexed_records[b'FLST'].itervalues():
+        for flst_rec in self._indexed_records[b'FLST'].values():
             ma_flst = _re_flst_ammo_weight.match(flst_rec.eid)
             if ma_flst:
                 flst_weight = float(u'%s.%s' % (ma_flst.group(1),
@@ -683,7 +683,7 @@ class _ATextReplacer(MultiTweakItem):
         # Convert the match/replace strings to record paths
         self._match_replace_rpaths = {
             rsig: tuple([RecPath(r) for r in rpaths])
-            for rsig, rpaths in self._match_replace_rpaths.iteritems()
+            for rsig, rpaths in self._match_replace_rpaths.items()
         }
 
     def wants_record(self, record):
@@ -703,7 +703,7 @@ class _ATextReplacer(MultiTweakItem):
 
     def tweak_record(self, record):
         record_sig = record._rec_sig
-        for re_to_match, replacement in self._re_mapping.iteritems():
+        for re_to_match, replacement in self._re_mapping.items():
             replacement_sub = re_to_match.sub
             def exec_replacement(rec_val):
                 if rec_val: # or blow up on re.sub
@@ -715,7 +715,7 @@ class _ATextReplacer(MultiTweakItem):
 
     def finish_tweaking(self, patch_file):
         # These GMSTs don't exist in Oblivion.esm, so create them in the BP
-        for extra_eid, extra_val in self._tr_extra_gmsts.iteritems():
+        for extra_eid, extra_val in self._tr_extra_gmsts.items():
             patch_file.new_gmst(extra_eid, extra_val)
 
 #------------------------------------------------------------------------------

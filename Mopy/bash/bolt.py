@@ -1066,7 +1066,7 @@ class Flags(object):
         """Removes all unknown flags if that option was set in __init__."""
         if self._unknown_is_unused:
             final_flags = 0
-            for flg_name, flg_idx in self._names.iteritems():
+            for flg_name, flg_idx in self._names.items():
                 if getattr(self, flg_name):
                     final_flags |= 1 << flg_idx
             self._field = final_flags
@@ -1187,17 +1187,17 @@ class DataDict(object):
     def __iter__(self):
         return iter(self._data)
     def values(self):
-        return self._data.viewvalues()
+        return self._data.values()
     def itervalues(self): # PY3: Drop
-        return self.values()
+        return list(self.values())
     def viewvalues(self): # PY3: Drop
-        return self.values()
+        return list(self.values())
     def items(self):
-        return self._data.viewitems()
+        return self._data.items()
     def iteritems(self): # PY3: Drop
-        return self.items()
+        return list(self.items())
     def viewitems(self): # PY3: Drop
-        return self.items()
+        return list(self.items())
     def get(self,key,default=None):
         return self._data.get(key, default)
     def pop(self,key,default=None):
@@ -1606,7 +1606,7 @@ class DataTableColumn(object):
     def __iter__(self):
         """Dictionary emulation."""
         column = self.column
-        return (key for key, col_dict in self._table.iteritems() if
+        return (key for key, col_dict in self._table.items() if
                 column in col_dict)
     def values(self):
         """Dictionary emulation."""
@@ -1614,18 +1614,18 @@ class DataTableColumn(object):
         column = self.column
         return (tableData[k][column] for k in self)
     def itervalues(self): # PY3: drop, 2to3 will have made it unused
-        return self.values()
+        return list(self.values())
     def viewvalues(self): # PY3: drop, 2to3 will have made it unused
-        return self.values()
+        return list(self.values())
     def items(self):
         """Dictionary emulation."""
         tableData = self._table._data
         column = self.column
         return ((k, tableData[k][column]) for k in self)
     def iteritems(self): # PY3: Drop
-        return self.items()
+        return list(self.items())
     def viewitems(self): # PY3: Drop
-        return self.items()
+        return list(self.items())
     def clear(self):
         """Dictionary emulation."""
         self._table.delColumn(self.column)
@@ -1706,7 +1706,7 @@ class DataTable(DataDict):
     ##: DataTableColumn.clear is the only usage, and that seems unused too
     def delColumn(self,column):
         """Deletes column of data."""
-        for rowData in self._data.itervalues():
+        for rowData in self._data.values():
             if column in rowData:
                 del rowData[column]
                 self.hasChanged = True

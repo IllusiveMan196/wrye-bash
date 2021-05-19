@@ -348,7 +348,7 @@ class _AWeightTweak(CustomChoiceTweak):
         log.setHeader(u'=== ' + self.tweak_log_header)
         log(self._log_weight_value % self.chosen_weight)
         log(u'* ' + self.tweak_log_msg % {
-            u'total_changed': sum(count.itervalues())})
+            u'total_changed': sum(count.values())})
         for src_plugin in load_order.get_ordered(count):
             log(u'  * %s: %d' % (src_plugin, count[src_plugin]))
 
@@ -486,7 +486,7 @@ class AssortedTweak_ScriptEffectSilencer(MultiTweakItem):
     def wants_record(self, record):
         # u'' here is on purpose! We're checking the EDID, which gets decoded
         return record.eid == u'SEFF' and any(
-            getattr(record, a) != v for a, v in self._silent_attrs.iteritems())
+            getattr(record, a) != v for a, v in self._silent_attrs.items())
 
     def tweak_record(self, record):
         s_attrs = self._silent_attrs

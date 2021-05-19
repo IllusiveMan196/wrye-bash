@@ -835,7 +835,7 @@ def get_local_app_data_path():
 def init_app_links(apps_dir, badIcons, iconList):
     init_params = []
     for path, (target, icon, shortcut_descr) in _get_app_links(
-            apps_dir).iteritems():
+            apps_dir).items():
         # msi shortcuts: dc0c8de
         if target.lower().find(u'' r'installer\{') != -1:
             target = path
@@ -1148,7 +1148,7 @@ class TaskDialog(object):
         if button.value >= _BUTTONID_OFFSET:
             button = self.__custom_buttons[button.value - _BUTTONID_OFFSET][0]
         else:
-            for stock_btn, stock_val in self.stock_button_ids.iteritems():
+            for stock_btn, stock_val in self.stock_button_ids.items():
                 if stock_val == button.value:
                     button = stock_btn
                     break
@@ -1311,7 +1311,7 @@ class TaskDialog(object):
                 button = self.__custom_buttons[wparam - _BUTTONID_OFFSET][0]
                 args.append(button)
             else:
-                for stock_btn, stock_val in self.stock_button_ids.iteritems():
+                for stock_btn, stock_val in self.stock_button_ids.items():
                     if stock_val == wparam:
                         button = stock_btn
                         break

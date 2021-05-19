@@ -1862,7 +1862,7 @@ class MreSpel(MelRecord,MreHasEffects):
                             4   : u'Ability',
                             5   : u'Poison'}
     spellTypeName_Number = {y.lower(): x for x, y in # if name is None it will
-                            spellTypeNumber_Name.iteritems() if x is not None}
+                            spellTypeNumber_Name.items() if x is not None}
     levelTypeNumber_Name = {None : u'NONE',
                             0    : u'Novice',
                             1    : u'Apprentice',
@@ -1870,7 +1870,7 @@ class MreSpel(MelRecord,MreHasEffects):
                             3    : u'Expert',
                             4    : u'Master'}
     levelTypeName_Number = {y.lower(): x for x, y in
-                            levelTypeNumber_Name.iteritems() if x is not None}
+                            levelTypeNumber_Name.items() if x is not None}
     attr_csv_struct[u'level'][2] = \
         lambda val: u'"%s"' % MreSpel.levelTypeNumber_Name.get(val, val)
     attr_csv_struct[u'spellType'][2] = \

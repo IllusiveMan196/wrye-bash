@@ -38,7 +38,7 @@ def _to_lower(ini_settings):
         ret_type = OrderedLowerDict if isinstance(input_dict,
                                                   OrderedDict) else LowerDict
         return ret_type(input_dict)
-    return LowerDict((x, _mk_dict(y)) for x, y in ini_settings.iteritems())
+    return LowerDict((x, _mk_dict(y)) for x, y in ini_settings.items())
 
 def get_ini_type_and_encoding(abs_ini_path):
     """Return ini type (one of IniFile, OBSEIniFile) and inferred encoding
@@ -293,7 +293,7 @@ class IniFile(AFile):
         Values in settings dictionary must be actual (setting, value) pairs."""
         ini_settings = _to_lower(ini_settings)
         deleted_settings = LowerDict((x, {CIstr(u) for u in y}) for x, y in
-                                     deleted_settings.iteritems())
+                                     deleted_settings.items())
         reDeleted = self.reDeletedSetting
         reComment = self.reComment
         reSection = self.reSection
@@ -306,7 +306,7 @@ class IniFile(AFile):
             def _add_remaining_new_items():
                 if section in ini_settings: del ini_settings[section]
                 if not sectionSettings: return
-                for sett, val in sectionSettings.iteritems():
+                for sett, val in sectionSettings.items():
                     tmpFileWrite(u'%s=%s\n' % (sett, val))
                 tmpFileWrite(u'\n')
             for line in self.read_ini_content(as_unicode=True):
@@ -332,7 +332,7 @@ class IniFile(AFile):
             # This will occur for the last INI section in the ini file
             _add_remaining_new_items()
             # Add remaining new entries
-            for section, sectionSettings in list(ini_settings.iteritems()):
+            for section, sectionSettings in list(ini_settings.items()):
                 # _add_remaining_new_items may modify ini_settings
                 if sectionSettings:
                     tmpFileWrite(u'[%s]\n' % section)
@@ -403,11 +403,11 @@ class DefaultIniFile(IniFile):
         #--Settings cache
         self.lines, current_line = [], 0
         self._ci_settings_cache_linenum = OrderedLowerDict()
-        for sect, setts in settings_dict.iteritems():
+        for sect, setts in settings_dict.items():
             self.lines.append(u'[%s]' % sect)
             self._ci_settings_cache_linenum[sect] = OrderedLowerDict()
             current_line += 1
-            for sett, val in setts.iteritems():
+            for sett, val in setts.items():
                 self.lines.append(u'%s=%s' % (sett, val))
                 self._ci_settings_cache_linenum[sect][sett] = (
                     val, current_line)

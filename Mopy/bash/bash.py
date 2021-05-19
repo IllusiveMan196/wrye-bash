@@ -596,7 +596,7 @@ def _select_game_popup(game_infos):
             self._callback = callback
             self._sorted_games = sorted(g.displayName for g in game_infos)
             self._game_to_paths = {g.displayName: ps for g, ps
-                                  in game_infos.iteritems()}
+                                  in game_infos.items()}
             self._game_to_info = {g.displayName: g for g in game_infos}
             self._game_to_bitmap = {
                 g.displayName: _wx.Bitmap(bass.dirs[u'images'].join(
