@@ -1127,6 +1127,8 @@ class DataDict(object):
         return self._data.values()
     def items(self):
         return self._data.items()
+    def get(self,key,default=None):
+        return self._data.get(key, default)
     def pop(self,key,default=None):
         return self._data.pop(key, default)
 
