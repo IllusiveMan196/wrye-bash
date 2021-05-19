@@ -525,7 +525,7 @@ class ActorLevels(_HandleAliases):
             modFile = ModFile(bosh.modInfos[modName],loadFactory)
             modFile.load(True)
             for rfid, record in modFile.tops[b'NPC_'].iter_present_records():
-                items = izip((u'eid', u'flags.pcLevelOffset', u'level_offset',
+                items = zip((u'eid', u'flags.pcLevelOffset', u'level_offset',
                           u'calcMin', u'calcMax'), (record.eid,
                          bool(record.flags.pcLevelOffset), record.level_offset,
                          record.calcMin, record.calcMax))
@@ -740,7 +740,7 @@ class FactionRelations(_AParser):
                 target_entry = MelObject()
                 record.relations.append(target_entry)
             # Actually write out the attributes from new_info
-            for rel_attr, rel_val in izip(self.cls_rel_attrs,
+            for rel_attr, rel_val in zip(self.cls_rel_attrs,
                                          (rel_fac,) + rel_attributes): ##: Py3: unpack
                 setattr(target_entry, rel_attr, rel_val)
 
@@ -882,7 +882,7 @@ class ItemStats(_HandleAliases):
     def _read_record(self, record, id_data):
         atts = self.sig_stats_attrs[record.rec_sig]
         id_data[record.fid].update(
-            izip(atts, (getattr(record, a) for a in atts)))
+            zip(atts, (getattr(record, a) for a in atts)))
 
     _changed_type = Counter #--changed[modName] = numChanged
     def _write_record(self, record, itemStats, changed):
@@ -908,7 +908,7 @@ class ItemStats(_HandleAliases):
         attrs = self.sig_stats_attrs[top_grup_sig]
         eid_or_next = 3 + self._called_from_patcher
         attr_dex = {att: dex for att, dex in
-                    izip(attrs, range(eid_or_next, eid_or_next + len(attrs)))}
+                    zip(attrs, range(eid_or_next, eid_or_next + len(attrs)))}
         attr_val = self._update_from_csv(csv_fields, index_dict=attr_dex)
         self.id_stored_data[top_grup_sig][longid].update(attr_val)
 
@@ -927,7 +927,7 @@ class ItemStats(_HandleAliases):
             for longid, attr_value in _key_sort(fid_attr_value,
                     keys_dex=(0, 1), values_key=u'eid'):
                 output = self._row_fmt_str % (top_grup, longid[0], longid[1],
-                    u','.join(ser(attr_value[x]) for x, ser in izip(atts, sers)))
+                    u','.join(ser(attr_value[x]) for x, ser in zip(atts, sers)))
                 out.write(output)
 
 #------------------------------------------------------------------------------
@@ -1352,7 +1352,7 @@ class SpellRecords(_UsesEffectsMixin):
         self.fid_stats[mid] = self._update_from_csv(fields,index_dict=attr_dex)
         if self.detailed:  # and not len(fields) < 7: IndexError
             attr_dex = dict(
-                izip(self.__class__._extra_attrs[:-1], range(8, 15)))
+                zip(self.__class__._extra_attrs[:-1], range(8, 15)))
             attr_val = self._update_from_csv(fields, index_dict=attr_dex)
             attr_val[u'effects'] = self.readEffects(fields[15:])
             self.fid_stats[mid].update(attr_val)

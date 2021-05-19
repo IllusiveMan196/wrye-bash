@@ -337,7 +337,7 @@ class Installer(ListInfo):
 
     def __setstate(self,values):
         self.initDefault() # runs on __init__ called by __reduce__
-        for a, v in izip(self.persistent, values):
+        for a, v in zip(self.persistent, values):
             setattr(self, a, v)
         rescan = False
         if not isinstance(self.extras_dict, dict):
@@ -671,7 +671,7 @@ class Installer(ListInfo):
         hasExtraData = self.hasExtraData
         # exclude u'' from active subpackages
         activeSubs = (
-            {x for x, y in izip(self.subNames[1:], self.subActives[1:]) if y}
+            {x for x, y in zip(self.subNames[1:], self.subActives[1:]) if y}
             if bain_type == 2 else set())
         data_sizeCrc = bolt.LowerDict()
         skipDirFiles = self.skipDirFiles
@@ -969,7 +969,7 @@ class Installer(ListInfo):
         #--SubNames, SubActives
         if bain_type == 2:
             self.subNames = sorted(subNameSet,key=str.lower)
-            actives = {x for x, y in izip(self.subNames, self.subActives)
+            actives = {x for x, y in zip(self.subNames, self.subActives)
                        if (y or x == u'')}
             if len(self.subNames) == 2: #--If only one subinstall, then make it active.
                 self.subActives = [True,True] # that's a complex/simple package
@@ -1883,7 +1883,7 @@ class InstallersData(DataStore):
             self.pop(deleted)
         pending, projects = refresh_info.pending, refresh_info.projects
         #--New/update crcs?
-        for subPending, inst_type in izip(
+        for subPending, inst_type in zip(
                 (pending - projects, pending & projects), self._inst_types):
             if not subPending: continue
             progress(0,_(u'Scanning Packages...'))
@@ -1905,7 +1905,7 @@ class InstallersData(DataStore):
                             in installers]
         progress.setFull(len(installers))
         pending = []
-        for i, (installer, destArchive) in list(enumerate(izip(
+        for i, (installer, destArchive) in list(enumerate(zip(
                 installers, destArchives))): # we may modify installers below
             progress(i, installer.archive)
             #--Extract the embedded BCF and move it to the Converters folder
