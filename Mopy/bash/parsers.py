@@ -34,7 +34,7 @@ from __future__ import division
 import csv
 import re
 from collections import defaultdict, Counter, OrderedDict
-from itertools import izip
+
 from operator import itemgetter
 
 # Internal

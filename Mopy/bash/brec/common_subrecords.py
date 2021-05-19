@@ -25,7 +25,7 @@ definitions for some commonly needed subrecords."""
 
 from __future__ import division
 from collections import defaultdict
-from itertools import chain, izip
+from itertools import chain
 
 from .advanced_elements import AttrValDecider, MelArray, MelTruncatedStruct, \
     MelUnion, PartialLoadDecider, FlagDecider, MelSorted
