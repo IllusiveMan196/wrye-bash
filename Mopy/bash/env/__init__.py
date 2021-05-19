@@ -27,7 +27,7 @@ implementations for the current OS."""
 import errno
 import platform
 import shutil
-from itertools import izip
+
 
 # First import the shared API
 from .common import *

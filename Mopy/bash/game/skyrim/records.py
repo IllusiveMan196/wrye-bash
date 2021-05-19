@@ -24,7 +24,7 @@
 from __future__ import unicode_literals
 
 from collections import OrderedDict
-from itertools import izip
+
 
 from ... import brec, bolt, bush
 from ...bolt import Flags, struct_pack, structs_cache, unpack_str16

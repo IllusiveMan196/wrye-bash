@@ -23,7 +23,7 @@
 """This module contains the MultiTweakItem classes that tweak RACE records."""
 
 from collections import defaultdict
-from itertools import izip
+
 
 from .base import MultiTweakItem, MultiTweaker
 from ... import bush
