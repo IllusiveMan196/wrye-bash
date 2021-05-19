@@ -192,6 +192,7 @@ class _HandleAliases(CsvParser):
     _key2_indexes = ()
     # the index of the csv field that contains the group type
     _grup_index = None
+    _nested_type = dict
 
     def __init__(self, aliases_, called_from_patcher=False):
         # Automatically set in _parse_csv_sources to the patch file's aliases -
@@ -200,6 +201,9 @@ class _HandleAliases(CsvParser):
         # Set to True when called by a patcher - can be used to alter stored
         # data format when reading from a csv - could be in a subclass
         self._called_from_patcher = called_from_patcher
+        # Maps record types to dicts that map long fids to stored information
+        # May have been retrieved from mod in second pass, or from a CSV file
+        self.id_stored_data = defaultdict(self._nested_type)
 
     def _coerce_fid(self, modname, hex_fid):
         """Create a long formid from a unicode modname and a unicode
@@ -263,6 +267,7 @@ class _AParser(_HandleAliases):
        and override _is_record_useful and _read_record_sp to use this pass.
      - If you want to skip either pass, just leave _fp_types / _sp_types
        empty."""
+    _nested_type = lambda: defaultdict(dict)
 
     def __init__(self, aliases_=None, called_from_patcher=False):
         # The types of records to read from in the first pass. These should be
@@ -287,9 +292,6 @@ class _AParser(_HandleAliases):
         # The types of records to read from in the second pass. These should be
         # strings matching the record types, *not* classes.
         self._sp_types = ()
-        # Maps record types to dicts that map long fids to stored information
-        # May have been retrieved from mod in second pass, or from a CSV file
-        self.id_stored_data = defaultdict(lambda : defaultdict(dict))
         super(_AParser, self).__init__(aliases_, called_from_patcher)
 
     # Plugin-related utilities
@@ -447,10 +449,9 @@ class ActorFactions(_AParser):
     _key2_indexes = (2, 3)
 
     def __init__(self, aliases_=None, called_from_patcher=False):
-        super(ActorFactions, self).__init__(aliases_, called_from_patcher)
         if self._called_from_patcher:
-            self.id_stored_data = defaultdict(
-                lambda: defaultdict(lambda: {u'factions': []}))
+            self._nested_type = lambda: defaultdict(lambda: {u'factions': []})
+        super(ActorFactions, self).__init__(aliases_, called_from_patcher)
         a_types = bush.game.actor_types
         # We don't need the first pass if we're used by the parser
         self._fp_types = (a_types + (b'FACT',) if not called_from_patcher
@@ -506,7 +507,7 @@ class ActorFactions(_AParser):
 
 #------------------------------------------------------------------------------
 class ActorLevels(_HandleAliases):
-    """Package: Functions for manipulating actor levels."""
+    """id_stored_data differs here - _key1 is a mod!"""
     _csv_header = (_(u'Source Mod'), _(u'Actor Eid'), _(u'Actor Mod'),
         _(u'Actor Object'), _(u'Offset'), _(u'CalcMin'), _(u'CalcMax'),
         _(u'Old IsPCLevelOffset'), _(u'Old Offset'), _(u'Old CalcMin'),
@@ -517,7 +518,7 @@ class ActorLevels(_HandleAliases):
 
     def __init__(self, aliases_=None, called_from_patcher=False):
         super(ActorLevels, self).__init__(aliases_, called_from_patcher)
-        self.id_stored_data = defaultdict(dict) #--levels = id_stored_data[mod][longid]
+        #--levels = id_stored_data[mod][longid]
         self.gotLevels = set()
         self._skip_mods = {u'none', bush.game.master_file.lower()}
         self._attr_dex = {u'eid': 1, u'level_offset': 4, u'calcMin': 5,
@@ -572,7 +573,7 @@ class ActorLevels(_HandleAliases):
         attr_dex[u'flags.pcLevelOffset'] = True
         return attr_dex
 
-    def _key1(self, csv_fields):
+    def _key1(self, csv_fields): # type: (list[unicode]) -> unicode
         source = csv_fields[0]
         if source.lower() in self._skip_mods: raise ValueError # exit _parse_line
         return source
@@ -623,7 +624,7 @@ class EditorIds(_HandleAliases):
         super(EditorIds, self).__init__(aliases_, called_from_patcher)
         self.badEidsList = badEidsList
         self.questionableEidsSet = questionableEidsSet
-        self.id_stored_data = defaultdict(dict) #--eid = eids[type][longid]
+        #--eid = eids[type][longid]
         self.old_new = {}
         self._parser_sigs = set(MreRecord.simpleTypes) - {b'CELL'}
         self._sort_args = dict(by_value=True)
@@ -842,7 +843,7 @@ class FidReplacer(_HandleAliases):
 #------------------------------------------------------------------------------
 class FullNames(_HandleAliases):
     """Names for records, with functions for importing/exporting from/to
-    mod/text file."""
+    mod/text file: id_stored_data[top_grup_sig][longid] = (eid, name)"""
     _csv_header = (_(u'Type'), _(u'Mod Name'), _(u'ObjectIndex'),
                    _(u'Editor Id'), _(u'Name'))
     _row_fmt_str = u'"%s","%s","0x%06X","%s","%s"\n'
@@ -851,8 +852,6 @@ class FullNames(_HandleAliases):
 
     def __init__(self, aliases_=None, called_from_patcher=False):
         super(FullNames, self).__init__(aliases_, called_from_patcher)
-        #--id_stored_data[top_grup_sig][longid] = (eid,name)
-        self.id_stored_data = defaultdict(dict)
         self._parser_sigs = bush.game.namesTypes
         self._attr_dex = {u'full': 4} if self._called_from_patcher else {
             u'eid': 3, u'full': 4}
@@ -880,6 +879,7 @@ class ItemStats(_HandleAliases):
     """Statistics for armor and weapons, with functions for
     importing/exporting from/to mod/text file."""
     _row_fmt_str = u'"%s","%s","0x%06X",%s\n'
+    _nested_type = lambda : defaultdict(dict)
 
     def __init__(self, aliases_=None, called_from_patcher=False):
         super(ItemStats, self).__init__(aliases_, called_from_patcher)
@@ -888,7 +888,6 @@ class ItemStats(_HandleAliases):
                                     r, a in bush.game.statsTypes.items()}
         else:
             self.sig_stats_attrs = bush.game.statsTypes
-        self.id_stored_data = defaultdict(lambda : defaultdict(dict))
         self._parser_sigs = set(self.sig_stats_attrs)
 
     def _read_record(self, record, id_data):
@@ -1109,6 +1108,7 @@ class _UsesEffectsMixin(_HandleAliases):
                              in schoolTypeNumber_Name.items()
                              if x is not None}
     _row_fmt_str = u'"%s","0x%06X",%s\n'
+    _key2_indexes = (0, 1)
 
     def __init__(self, aliases_, atts, called_from_patcher=False):
         super(_UsesEffectsMixin, self).__init__(aliases_, called_from_patcher)
@@ -1129,17 +1129,17 @@ class _UsesEffectsMixin(_HandleAliases):
                 val)[1:] # chop off the first comma...
         self._sort_args = dict(values_key=u'eid')
 
-    def _parse_line(self, csv_fields):
+    def _update_from_csv(self, top_grup_sig, csv_fields, index_dict=None):
         """Common code for Sigil/Ingredients."""
-        mid = self._coerce_fid(csv_fields[0], csv_fields[1])
+        attr_val = super(_UsesEffectsMixin, self)._update_from_csv(
+            top_grup_sig, csv_fields)
         smod = str_or_none(csv_fields[7])
         if smod is None: sid = None
         else: sid = self._coerce_fid(smod, csv_fields[8])
-        attr_val = self._update_from_csv(self._parser_sigs[0], csv_fields)
         attr_val[u'script_fid'] = sid
         effects_start = len(self._attr_dex) + 4 # for the two long fids
         attr_val[u'effects'] = self.readEffects(csv_fields[effects_start:])
-        self.fid_stats[mid] = attr_val
+        return attr_val
 
     def _read_record(self, record, id_data, __attrgetters=attrgetter_cache):
         id_data[record.fid] = {att: __attrgetters[att](record) for att in
@@ -1296,7 +1296,6 @@ class ItemPrices(_HandleAliases):
 
     def __init__(self, aliases_=None):
         super(ItemPrices, self).__init__(aliases_)
-        self.id_stored_data = defaultdict(dict)
         self._parser_sigs = set(bush.game.pricesTypes)
         self._sort_args = dict(values_key=[u'eid', u'value'])
 

@@ -106,7 +106,6 @@ class _ExSpecialList(_HandleAliases, ListPatcher, ExSpecial):
     def __init__(self, p_name, p_file, p_sources):
         super(_ExSpecialList, self).__init__(p_file.pfile_aliases)
         ListPatcher.__init__(self, p_name, p_file, p_sources)
-        self.id_stored_data = {self._read_sigs[0]: {}}
 
     @classmethod
     def gui_cls_vars(cls):
