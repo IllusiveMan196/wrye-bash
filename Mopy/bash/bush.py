@@ -143,7 +143,7 @@ def _supportedGames():
         deprint(u'  ' + wrapped_line)
     # Merge the dicts of games we found from all global sources
     all_found_games = _registryGames.copy()
-    for found_game, found_paths in _win_store_games.iteritems():
+    for found_game, found_paths in _win_store_games.items():
         if found_game in all_found_games:
             all_found_games[found_game].extend(found_paths)
         else:
@@ -206,8 +206,8 @@ def _detectGames(cli_path=u'', bash_ini_=None):
     deprint(u'Detecting games via the -o argument, bash.ini and relative '
             u'path:')
     # iterate installPaths in insert order ('cmd', 'ini', 'upMopy')
-    for test_path, foundMsg, errorMsg in installPaths.itervalues():
-        for gamename, info in _allGames.iteritems():
+    for test_path, foundMsg, errorMsg in installPaths.values():
+        for gamename, info in _allGames.items():
             if info.test_game_path(test_path):
                 # Must be this game
                 deprint(foundMsg % {u'gamename': gamename}, test_path)
@@ -248,6 +248,6 @@ def detect_and_set_game(cli_game_dir=u'', bash_ini_=None, gname=None,
     # No match found, return the list of possible games (may be empty if
     # nothing is found in registry)
     return {_allGames[found_game]: fg_path for found_game, fg_path
-            in foundGames.iteritems()}
+            in foundGames.items()}
 
 def game_path(display_name): return foundGames[display_name]

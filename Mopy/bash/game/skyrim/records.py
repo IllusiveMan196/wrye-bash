@@ -444,7 +444,7 @@ class _AVmadComponent(object):
         returns the result as a string, ready for writing to an output
         stream."""
         out_data = b''
-        for attr, fmt in self.__class__.processors.iteritems():
+        for attr, fmt in self.__class__.processors.items():
             attr_val = getattr(record, attr)
             if fmt != u'str16':
                 out_data += fmt[1](attr_val)
@@ -456,7 +456,7 @@ class _AVmadComponent(object):
         """Loads data for this fragment from the specified input stream and
         attaches it to the specified record. The version of VMAD and the object
         format are also given."""
-        for attr, fmt in self.__class__.processors.iteritems():
+        for attr, fmt in self.__class__.processors.items():
             if fmt != u'str16':
                 setattr(record, attr, ins.unpack(fmt[0], fmt[2],
                                                  *debug_strs)[0])
@@ -527,7 +527,7 @@ class _AFixedContainer(_AVmadComponent):
         new_child = self.child_loader.make_new
         load_child = self.child_loader.load_frag
         for flag_attr, child_attr in \
-                self.__class__.flags_to_children.iteritems():
+                self.__class__.flags_to_children.items():
             cont_child = None
             if getattr(child_flags, flag_attr):
                 cont_child = new_child()
@@ -542,7 +542,7 @@ class _AFixedContainer(_AVmadComponent):
         child_flags = getattr(record, self.__class__.flags_attr)
         store_child = children.append
         for flag_attr, child_attr in \
-                self.__class__.flags_to_children.iteritems():
+                self.__class__.flags_to_children.items():
             cont_child = getattr(record, child_attr)
             write_child = cont_child is not None
             # No need to store children we won't be writing out
@@ -558,7 +558,7 @@ class _AFixedContainer(_AVmadComponent):
 
     @property
     def used_slots(self):
-        return list(self.__class__.flags_to_children.itervalues()) + super(
+        return list(self.__class__.flags_to_children.values()) + super(
             _AFixedContainer, self).used_slots
 
 class _AVariableContainer(_AVmadComponent):

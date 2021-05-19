@@ -344,7 +344,7 @@ class FileInfo(AFile, ListInfo):
     def _doBackup(self,backupDir,forceBackup=False):
         """Creates backup(s) of file, places in backupDir."""
         #--Skip backup?
-        if self not in self.get_store().viewvalues(): return
+        if self not in self.get_store().values(): return
         if self.madeBackup and not forceBackup: return
         #--Backup
         self.get_store().copy_info(self.ci_key, backupDir)
@@ -826,7 +826,7 @@ class ModInfo(FileInfo):
         is_attached = re.compile(bsa_pattern, re.I | re.U).match
         # bsaInfos must be updated and contain all existing bsas
         if bsa_infos is None: bsa_infos = bsaInfos
-        return [i for b, i in bsa_infos.iteritems() if is_attached(b.s)]
+        return [i for b, i in bsa_infos.items() if is_attached(b.s)]
 
     def hasBsa(self):
         """Returns True if plugin has an associated BSA."""
@@ -889,7 +889,7 @@ class ModInfo(FileInfo):
                             u'game installation and double-check your INI '
                             u'settings')
                 raise ModError(self.ci_key, msg)
-            for bsa_inf, assets in bsa_assets.iteritems():
+            for bsa_inf, assets in bsa_assets.items():
                 out_path = dirs[u'bsaCache'].join(bsa_inf.ci_key)
                 try:
                     bsa_inf.extract_assets(assets, out_path.s)
@@ -1081,7 +1081,7 @@ def process_tags(tag_set, drop_unknown=True):
     currently used, obsolete or aliases)."""
     ret_tags = tag_set.copy()
     ret_tags -= removed_tags
-    for old_tag, replacement_tags in tag_aliases.iteritems():
+    for old_tag, replacement_tags in tag_aliases.items():
         if old_tag in tag_set:
             ret_tags.discard(old_tag)
             ret_tags.update(replacement_tags)
@@ -1180,7 +1180,7 @@ class INIInfo(IniFile):
                         # tweak that is applied, and from the same installer
                         mismatch = 2
                         if self_installer is None: continue
-                        for ini_info in infos.itervalues():
+                        for ini_info in infos.values():
                             if self is ini_info: continue
                             if self_installer != ini_info.get_table_prop(
                                     u'installer'): continue
@@ -1348,7 +1348,7 @@ class SaveInfo(FileInfo):
         master_map = {x.s: y.s for x, y in
                       izip(oldMasters, self.header.masters) if x != y}
         if master_map:
-            for co_file in self._co_saves.itervalues():
+            for co_file in self._co_saves.values():
                 co_file.remap_plugins(master_map)
                 co_file.write_cosave_safe()
 
@@ -1440,7 +1440,7 @@ class SaveInfo(FileInfo):
         # super call added the backup paths but not the actual rename cosave
         # paths inside the store_dir - add those only if they exist
         old, new = old_new_paths[0] # HACK: (oldName.ess, newName.ess) abspaths
-        for co_type, co_file in self._co_saves.iteritems():
+        for co_type, co_file in self._co_saves.items():
             old_new_paths.append((co_file.abs_path,
                                   co_type.get_cosave_path(new)))
         return old_new_paths
@@ -1614,7 +1614,7 @@ class TableFileInfos(DataStore):
                 if filePath.exists():
                     del paths_to_keys[filePath] # item was not deleted
         self._notify_bain(deleted=paths_to_keys)
-        return list(paths_to_keys.itervalues())
+        return list(paths_to_keys.values())
 
     def _notify_bain(self, deleted=frozenset(), changed=frozenset(),
                      renamed={}):
@@ -1792,7 +1792,7 @@ class INIInfos(TableFileInfos):
     def __init__(self):
         INIInfos._default_tweaks = {
             GPath_no_norm(k): DefaultIniInfo(k, v) for k, v in
-            bush.game.default_tweaks.iteritems()}
+            bush.game.default_tweaks.items()}
         super(INIInfos, self).__init__(dirs[u'ini_tweaks'],
                                        factory=ini_info_factory)
         self._ini = None
@@ -1812,7 +1812,7 @@ class INIInfos(TableFileInfos):
         else: # not an OrderedDict, updating from 306
             choice, previous_ini = -1, None
         # Make a copy, we may modify the _target_inis dict
-        for ini_name, ini_path in list(_target_inis.iteritems()):
+        for ini_name, ini_path in list(_target_inis.items()):
             if ini_name == _(u'Browse...'): continue
             # If user started with non-translated, 'Browse...'
             # will still be in here, but in English.  It wont get picked
@@ -1839,7 +1839,7 @@ class INIInfos(TableFileInfos):
             choice = list(bass.settings[u'bash.ini.choices']).index(
                 previous_ini)
         bass.settings[u'bash.ini.choice'] = choice if choice >= 0 else 0
-        self.ini = list(bass.settings[u'bash.ini.choices'].itervalues())[
+        self.ini = list(bass.settings[u'bash.ini.choices'].values())[
             bass.settings[u'bash.ini.choice']]
 
     @property
@@ -1851,7 +1851,7 @@ class INIInfos(TableFileInfos):
         if self._ini is not None and self._ini.abs_path == ini_path:
             return # nothing to do
         self._ini = BestIniFile(ini_path)
-        for ini_info in self.itervalues(): ini_info.reset_status()
+        for ini_info in self.values(): ini_info.reset_status()
 
     @staticmethod
     def update_targets(targets_dict):
@@ -1880,7 +1880,7 @@ class INIInfos(TableFileInfos):
 
     def _refresh_ini_tweaks(self):
         """Refresh from file directory."""
-        oldNames = {n for n, v in self.iteritems() if not v.is_default_tweak}
+        oldNames = {n for n, v in self.items() if not v.is_default_tweak}
         _added = set()
         _updated = set()
         newNames = self._names()
@@ -1916,7 +1916,7 @@ class INIInfos(TableFileInfos):
         return _added, _deleted_, _updated
 
     def _missing_default_inis(self):
-        return ((k, v) for k, v in self._default_tweaks.iteritems() if
+        return ((k, v) for k, v in self._default_tweaks.items() if
                 k not in self)
 
     def refresh(self, refresh_infos=True, refresh_target=True):
@@ -1927,7 +1927,7 @@ class INIInfos(TableFileInfos):
             self.ini.updated or self.ini.do_update())
         if changed: # reset the status of all infos and let RefreshUI set it
             self.ini.updated = False
-            for ini_info in self.itervalues(): ini_info.reset_status()
+            for ini_info in self.values(): ini_info.reset_status()
         change = bool(_added) or bool(_updated) or bool(_deleted_) or changed
         if not change: return change
         return _added, _updated, _deleted_, changed
@@ -1980,9 +1980,9 @@ class INIInfos(TableFileInfos):
                     if setting in target_settings[section]:
                         new_tweak_settings[section][setting] = \
                             target_settings[section][setting]
-        for k, v in list(new_tweak_settings.iteritems()): # drop line numbers
+        for k, v in list(new_tweak_settings.items()): # drop line numbers
             new_tweak_settings[k] = { # saveSettings converts to LowerDict
-                sett: val[0] for sett, val in v.iteritems()}
+                sett: val[0] for sett, val in v.items()}
         dup_info.saveSettings(new_tweak_settings)
         return True
 
@@ -2071,7 +2071,7 @@ class ModInfos(FileInfos):
             u'GOTY non-SI':247388812, # GOTY version
             u'SI':         277504985, # Shivering Isles 1.2
             u'GBR SI':     260961973} # GBR Main File Patch
-        self.size_voVersion = {y:x for x, y in self.version_voSize.iteritems()}
+        self.size_voVersion = {y:x for x, y in self.version_voSize.items()}
         self.voCurrent = None
         self.voAvailable = set()
         # removed/extra mods in plugins.txt - set in load_order.py,
@@ -2102,7 +2102,7 @@ class ModInfos(FileInfos):
     @property
     def bashed_patches(self):
         if self._bashed_patches is self.__calculate:
-            self._bashed_patches = {mname for mname, modinf in self.iteritems()
+            self._bashed_patches = {mname for mname, modinf in self.items()
                                     if modinf.isBP()}
         return self._bashed_patches
 
@@ -2331,7 +2331,7 @@ class ModInfos(FileInfos):
         """Refreshes which mods are supposed to have strings files, but are
         missing them (=CTD). For Skyrim you need to have a valid load order."""
         oldBad = self.missing_strings
-        self.missing_strings = {k for k, v in self.iteritems()
+        self.missing_strings = {k for k, v in self.items()
                                 if v.isMissingStrings()}
         self.new_missing_strings = self.missing_strings - oldBad
         return bool(self.new_missing_strings)
@@ -2352,7 +2352,7 @@ class ModInfos(FileInfos):
         toGhost = bass.settings.get(u'bash.mods.autoGhost',False)
         if force or toGhost:
             allowGhosting = self.table.getColumn(u'allowGhosting')
-            for mod, modInfo in self.iteritems():
+            for mod, modInfo in self.items():
                 modGhost = toGhost and not load_order.cached_is_active(mod) \
                            and allowGhosting.get(mod, True)
                 oldGhost = modInfo.isGhost
@@ -2438,7 +2438,7 @@ class ModInfos(FileInfos):
     def _refresh_bash_tags(self):
         """Reloads bash tags for all mods set to receive automatic bash
         tags."""
-        for modinf in self.itervalues(): # type: ModInfo
+        for modinf in self.values(): # type: ModInfo
             autoTag = modinf.is_auto_tagged(default_auto=None)
             if autoTag is None and modinf.get_table_prop(u'bashTags') is None:
                 # A new mod, set auto tags to True (default)
@@ -2485,7 +2485,7 @@ class ModInfos(FileInfos):
             pm_config_key = u'PatchMerger'
             if patchConfigs.get(pm_config_key,{}).get(u'isEnabled'):
                 config_checked = patchConfigs[pm_config_key][u'configChecks']
-                for modName, is_merged in config_checked.iteritems():
+                for modName, is_merged in config_checked.items():
                     if is_merged and modName in self:
                         if skip_active and load_order.cached_is_active(
                                 modName): continue
@@ -2812,7 +2812,7 @@ class ModInfos(FileInfos):
 
     def ini_files(self): ##: What about SkyrimCustom.ini etc?
         # PY3: We can replace this with reversed() on 3.8+
-        iniFiles = list(self._plugin_inis.itervalues()) # in active order
+        iniFiles = list(self._plugin_inis.values()) # in active order
         iniFiles.reverse() # later loading inis override previous settings
         iniFiles.append(oblivionIni)
         return iniFiles
@@ -2867,7 +2867,7 @@ class ModInfos(FileInfos):
         those plugins. Otherwise, returns it for all plugins."""
         if for_plugins is None: for_plugins = list(self)
         # We'll be removing BSAs from here once we've given them a position
-        available_bsas = dict(bsaInfos.viewitems())
+        available_bsas = dict(bsaInfos.items())
         bsa_lo = OrderedDict() # Final load order, -1 means it came from an INI
         bsa_cause = {} # Reason each BSA was loaded
         def _bsas_from_ini(i, k):
@@ -3020,7 +3020,7 @@ class ModInfos(FileInfos):
         """Set current (and available) master game esm(s) - Oblivion only."""
         if bush.game.fsName != u'Oblivion': return
         self.voAvailable.clear()
-        for name,info in self.iteritems():
+        for name,info in self.items():
             maOblivion = reOblivion.match(name.s)
             if maOblivion and info.fsize in self.size_voVersion:
                 self.voAvailable.add(self.size_voVersion[info.fsize])
@@ -3159,7 +3159,7 @@ class ModInfos(FileInfos):
         more information."""
         cached_dependents = self.dependents
         cached_dependents.clear()
-        for p, p_info in self.iteritems():
+        for p, p_info in self.items():
             for p_master in p_info.masterNames:
                 cached_dependents[p_master].add(p)
 
@@ -3247,14 +3247,14 @@ class SaveInfos(FileInfos):
         """Renames member file from oldName to newName, update also cosave
         instance names."""
         old_key = super(SaveInfos, self).rename_operation(member_info, newName)
-        for co_type, co_file in self[newName]._co_saves.iteritems():
+        for co_type, co_file in self[newName]._co_saves.items():
             co_file.abs_path = co_type.get_cosave_path(self[newName].abs_path)
         return old_key
 
     def _additional_deletes(self, fileInfo, toDelete):
         # type: (SaveInfo, list) -> None
         toDelete.extend(
-            x.abs_path for x in fileInfo._co_saves.itervalues())
+            x.abs_path for x in fileInfo._co_saves.values())
         # now add backups and cosaves backups
         super(SaveInfos, self)._additional_deletes(fileInfo, toDelete)
 
@@ -3270,7 +3270,7 @@ class SaveInfos(FileInfos):
             co_instances = self[fileName]._co_saves
         except KeyError: # fileName is outside self.store_dir
             co_instances = SaveInfo.get_cosaves_for_path(fileName)
-        for co_type, co_file in co_instances.iteritems():
+        for co_type, co_file in co_instances.items():
             newPath = co_type.get_cosave_path(dest_path)
             if newPath.exists(): newPath.remove() ##: dont like it, investigate
             if co_file.abs_path.exists(): pathFunc(co_file.abs_path, newPath)
@@ -3584,7 +3584,7 @@ def initOptions(bashIni):
     if bashIni:
         defaultOptions = {}
         for settingsDict in [bass.tooldirs, inisettings]:
-            for defaultKey, defaultValue in settingsDict.iteritems():
+            for defaultKey, defaultValue in settingsDict.items():
                 valueType = type(defaultValue)
                 readKey = __type_key_preffix[valueType] + defaultKey
                 defaultOptions[readKey.lower()] = (defaultKey, settingsDict, valueType)

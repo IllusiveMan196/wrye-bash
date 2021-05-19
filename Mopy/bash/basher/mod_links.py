@@ -449,7 +449,7 @@ class _ModGroups(CsvParser):
     def assignedGroups():
         """Return all groups that are currently assigned to mods."""
         column = bosh.modInfos.table.getColumn(u'group')
-        return {x for x in column.itervalues() if x}
+        return {x for x in column.values() if x}
 
     def writeToModInfos(self,mods=None):
         """Exports mod groups to modInfos."""
@@ -549,7 +549,7 @@ class Mod_Groups(_Mod_Labels):
         super(Mod_Groups, self)._initData(window, selection)
         selection = set(selection)
         mod_group = bosh.modInfos.table.getColumn(u'group')
-        modGroup = {x[1] for x in mod_group.iteritems() if x[0] in selection}
+        modGroup = {x[1] for x in mod_group.items() if x[0] in selection}
         class _CheckGroup(CheckLink, self.__class__.choiceLinkType):
             def _check(self):
                 """Check the Link if any of the selected mods belongs to it."""
@@ -616,7 +616,7 @@ class Mod_Details(OneItemLink):
                     buff.write(u'  %s\n\n' % _(u'(Details not provided for '
                                                u'this record type.)'))
                     continue
-                records = [(f, e) for f, (_h, e) in group_records.iteritems()]
+                records = [(f, e) for f, (_h, e) in group_records.items()]
                 records.sort(key=lambda r: r[1].lower())
                 for f, e in records:
                     buff.write(u'  %08X %s\n' % (f, e))
@@ -917,7 +917,7 @@ class Mod_MarkMergeable(ItemLink):
         yes = [x for x in self.selected if
                x not in tagged_no_merge and x in bosh.modInfos.mergeable]
         no = set(self.selected) - set(yes)
-        no = [u'%s:%s' % (x, y) for x, y in result.iteritems() if x in no]
+        no = [u'%s:%s' % (x, y) for x, y in result.items() if x in no]
         if bush.game.check_esl:
             message = u'== %s\n\n' % _(
                 u'Plugins that qualify for ESL flagging.')
@@ -1921,7 +1921,7 @@ class Mod_Factions_Import(_Mod_Import_Link):
 
     def _log(self, changed, fileName):
         log_out = ((u'* %s : %03d  %s\n' % (grp_name, v, fileName)) for
-                   grp_name, v in sorted(changed.iteritems()))
+                   grp_name, v in sorted(changed.items()))
         self._showLog(u''.join(log_out))
 
 #------------------------------------------------------------------------------

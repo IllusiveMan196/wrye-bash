@@ -168,7 +168,7 @@ class CsvParser(object):
         modFile = self._load_plugin(modInfo, target_types=self.id_stored_data)
         changed = self._changed_type()
         # We know that the loaded mod only has the tops loaded that we need
-        for top_grup_sig, stored_rec_info in self.id_stored_data.iteritems():
+        for top_grup_sig, stored_rec_info in self.id_stored_data.items():
             rec_block = modFile.tops.get(top_grup_sig, None)
             # Check if this record type makes any sense to patch
             if not stored_rec_info or not rec_block: continue
@@ -457,7 +457,7 @@ class ActorFactions(_AParser):
         return {f.faction: f.rank for f in record.factions}
 
     def _write_record_2(self, record, new_info, cur_info):
-        for faction, rank in set(new_info.iteritems()) - set(cur_info.iteritems()):
+        for faction, rank in set(new_info.items()) - set(cur_info.items()):
             # Check if this an addition or a change
             for entry in record.factions:
                 if entry.faction == faction:
@@ -728,7 +728,7 @@ class FactionRelations(_AParser):
         return relations
 
     def _write_record_2(self, record, new_info, cur_info):
-        for rel_fac, rel_attributes in set(new_info.iteritems()) - set(cur_info.iteritems()):
+        for rel_fac, rel_attributes in set(new_info.items()) - set(cur_info.items()):
             # See if this is a new relation or a change to an existing one
             for entry in record.relations:
                 if rel_fac == entry.faction:
@@ -792,11 +792,11 @@ class FidReplacer(_HandleAliases):
         filt_fids.update(newId for newId in self.new_eid
                          if newId[0] in masters_list)
         old_eid_filtered = {oldId: eid for oldId, eid
-                            in self.old_eid.iteritems() if oldId in filt_fids}
+                            in self.old_eid.items() if oldId in filt_fids}
         new_eid_filtered = {newId: eid for newId, eid
-                            in self.new_eid.iteritems() if newId in filt_fids}
+                            in self.new_eid.items() if newId in filt_fids}
         old_new_filtered = {oldId: newId for oldId, newId
-                            in self.old_new.iteritems()
+                            in self.old_new.items()
                             if oldId in filt_fids and newId in filt_fids}
         if not old_new_filtered: return False
         #--Swapper function
@@ -819,7 +819,7 @@ class FidReplacer(_HandleAliases):
         modFile.safeSave()
         entries = [(count, old_eid_filtered[oldId],
                     new_eid_filtered[old_new_filtered[oldId]])
-                   for oldId, count in old_count.iteritems()]
+                   for oldId, count in old_count.items()]
         entries.sort(key=itemgetter(1))
         return u'\n'.join([u'%3d %s >> %s' % entry for entry in entries])
 
@@ -873,7 +873,7 @@ class ItemStats(_HandleAliases):
         super(ItemStats, self).__init__(aliases_, called_from_patcher)
         if self._called_from_patcher:
             self.sig_stats_attrs = {r: tuple(x for x in a if x != u'eid') for
-                                    r, a in bush.game.statsTypes.iteritems()}
+                                    r, a in bush.game.statsTypes.items()}
         else:
             self.sig_stats_attrs = bush.game.statsTypes
         self.id_stored_data = defaultdict(lambda : defaultdict(dict))
@@ -888,7 +888,7 @@ class ItemStats(_HandleAliases):
     def _write_record(self, record, itemStats, changed):
         """Writes stats to specified mod."""
         change = False
-        for stat_key, n_stat in itemStats.iteritems():
+        for stat_key, n_stat in itemStats.items():
             if change:
                 setattr(record, stat_key, n_stat)
                 continue
@@ -1032,7 +1032,7 @@ class ScriptText(CsvParser):
         added = []
         if self.makeNew and self.eid_data:
             tes4 = modFile.tes4
-            for eid, (newText, longid) in self.eid_data.iteritems():
+            for eid, (newText, longid) in self.eid_data.items():
                 scriptFid = genFid(tes4.num_masters, tes4.getNextObject())
                 newScript = MreRecord.type_class[b'SCPT'](
                     RecHeader(b'SCPT', 0, 0x40000, scriptFid, 0))
@@ -1081,19 +1081,19 @@ class _UsesEffectsMixin(_HandleAliases):
         _(u'SE school'),_(u'SE visual'),_(u'SE Is Hostile'),_(u'SE Name'))
     recipientTypeNumber_Name = {None:u'NONE',0:u'Self',1:u'Touch',2:u'Target',}
     recipientTypeName_Number = {y.lower(): x for x, y
-                                in recipientTypeNumber_Name.iteritems()
+                                in recipientTypeNumber_Name.items()
                                 if x is not None}
     actorValueNumber_Name = {x: y for x, y
                              in enumerate(bush.game.actor_values)}
     actorValueNumber_Name[None] = u'NONE'
     actorValueName_Number = {y.lower(): x for x, y
-                             in actorValueNumber_Name.iteritems()
+                             in actorValueNumber_Name.items()
                              if x is not None}
     schoolTypeNumber_Name = {None:u'NONE',0:u'Alteration',1:u'Conjuration',
                              2:u'Destruction',3:u'Illusion',4:u'Mysticism',
                              5:u'Restoration',}
     schoolTypeName_Number = {y.lower(): x for x, y
-                             in schoolTypeNumber_Name.iteritems()
+                             in schoolTypeNumber_Name.items()
                              if x is not None}
     _row_fmt_str = u'"%s","0x%06X",%s\n'
 
@@ -1233,7 +1233,7 @@ class _UsesEffectsMixin(_HandleAliases):
                       __attrgetters=attrgetter_cache):
         """Writes stats to specified mod."""
         imported = False
-        for att, val in newStats.iteritems():
+        for att, val in newStats.items():
             old_val = __attrgetters[att](record)
             if att == u'eid': old_eid = old_val
             if old_val != val:
@@ -1248,7 +1248,7 @@ class _UsesEffectsMixin(_HandleAliases):
         stats, row_fmt_str = self.fid_stats, self._row_fmt_str
         for rfid, fstats in _key_sort(stats, values_key=u'eid'): ##: , x[0]) ??
             output = row_fmt_str % (rfid[0], rfid[1], u','.join(ser(fstats[k])
-                for k, ser in self._attr_serializer.iteritems()))
+                for k, ser in self._attr_serializer.items()))
             out.write(output)
 
 #------------------------------------------------------------------------------
