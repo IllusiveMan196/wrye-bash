@@ -24,7 +24,7 @@
 now. See #190, its code should be refactored and land in basher and/or gui."""
 
 # Imports ---------------------------------------------------------------------
-from __future__ import division
+
 
 from . import bass # for dirs - try to avoid
 from . import bolt

@@ -23,7 +23,7 @@
 """Houses abstract base classes and some APIs for representing records and
 subrecords in memory."""
 
-from __future__ import division
+
 
 from collections import defaultdict
 import copy
