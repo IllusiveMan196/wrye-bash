@@ -24,7 +24,7 @@
 properties about records and either notifies the user or attempts a fix when it
 notices a problem."""
 
-from __future__ import division
+
 
 import random
 import re

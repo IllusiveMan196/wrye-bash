@@ -22,7 +22,7 @@
 # =============================================================================
 """This module contains the skyrim SE record classes. The great majority are
 imported from skyrim."""
-from __future__ import unicode_literals
+
 
 from ...bolt import Flags
 from ...brec import MelRecord, MelGroups, MelStruct, MelString, MelSet, \
