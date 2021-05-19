@@ -25,7 +25,7 @@
 #--Standard
 from __future__ import division, print_function
 
-import cPickle as pickle  # PY3
+import pickle as pickle  # PY3
 import collections
 import copy
 import datetime
