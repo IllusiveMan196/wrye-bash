@@ -70,7 +70,7 @@ def _early_setup(debug):
         #     os.path.join(os.getcwdu(), u'BashBugDump.log'), u'w', buffering=1,
         #     encoding=u'utf-8')
         _bugdump_handle = codecs.getwriter(u'utf-8')(
-            open(os.path.join(os.getcwdu(), u'BashBugDump.log'), u'w',
+            open(os.path.join(os.getcwd(), u'BashBugDump.log'), u'w',
                  buffering=0))
         sys.stdout = _bugdump_handle
         sys.stderr = _bugdump_handle
