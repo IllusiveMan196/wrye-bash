@@ -104,7 +104,7 @@ class ConditionFunc(_ACondition):
         for a in self.func_args:
             if isinstance(a, str): # String
                 fmt_a = u'"%s"' % a
-            elif isinstance(a, (int, int)): # Checksum
+            elif isinstance(a, int): # Checksum
                 fmt_a = u'%X' % a
             else: # Comparison
                 fmt_a = u'%r' % a

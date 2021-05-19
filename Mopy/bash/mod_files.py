@@ -357,7 +357,7 @@ class ModFile(object):
                 return indices[m_name] if obj_id >= 0x800 else 0
         def mapper(long_fid):
             if long_fid is None: return None
-            if isinstance(long_fid, (int, int)): return long_fid
+            if isinstance(long_fid, int): return long_fid
             modName, object_id = long_fid
             return (_master_index(modName, object_id) << 24) | object_id
         return mapper
