@@ -25,7 +25,7 @@ functions to initialize bass.dirs that need be initialized high up into the
 boot sequence to be able to backup/restore settings."""
 import io
 import os
-from ConfigParser import ConfigParser, MissingSectionHeaderError
+from configparser import ConfigParser, MissingSectionHeaderError
 # Local - make sure that all imports here are carefully done in bash.py first
 from .bass import dirs, get_ini_option
 from .bolt import GPath, Path, decoder, deprint
