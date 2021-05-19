@@ -55,7 +55,7 @@ path_sep = u'\\'
 # Utilities -------------------------------------------------------------------
 def _decode_path(string_path, bsa_name):
     try:
-        return unicode(string_path, encoding=_bsa_encoding)
+        return str(string_path, encoding=_bsa_encoding)
     except UnicodeDecodeError:
         raise BSADecodingError(bsa_name, string_path)
 
@@ -532,7 +532,7 @@ class ABsa(AFile):
             extracted.
         :param progress: The progress callback to use. None if unwanted."""
         folder_files_dict = self._map_files_to_folders(
-            imap(unicode.lower, asset_paths))
+            imap(str.lower, asset_paths))
         del asset_paths # forget about this
         # load the bsa - this should be reworked to load only needed records
         self._load_bsa()
@@ -673,7 +673,7 @@ class BSA(ABsa):
             for __ in xrange(folder_record.files_count):
                 try:
                     # Inlined from _decode_path for startup performance
-                    filename = unicode(file_names[names_record_index],
+                    filename = str(file_names[names_record_index],
                                        encoding=_bsa_encoding)
                 except UnicodeDecodeError:
                     raise BSADecodingError(self.bsa_name,

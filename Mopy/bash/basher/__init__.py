@@ -908,7 +908,7 @@ class ModList(_ModsUIList):
             pinned = load_order.filter_pinned(self.GetSelected())
             if pinned:
                 msg = (_(u"You can't reorder the following mods:") + u'\n' +
-                       u', '.join(unicode(s) for s in pinned))
+                       u', '.join(str(s) for s in pinned))
                 continue_key = u'bash.mods.dnd.pinned.continue'
         if msg:
             balt.askContinue(self, msg, continue_key)
@@ -3368,7 +3368,7 @@ class ScreensList(balt.UIList):
                 if not self.try_rename(scrinf, root, numStr, to_select, to_del,
                                        item_edited): break
                 num += 1
-                numStr = unicode(num).zfill(digits)
+                numStr = str(num).zfill(digits)
             if to_select:
                 self.RefreshUI(redraw=to_select, to_del=to_del,
                                detail_item=item_edited[0])

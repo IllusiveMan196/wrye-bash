@@ -47,7 +47,7 @@ from ..exception import AbstractError, ArgumentError, BSAError, CancelError, \
     InstallerArchiveError, SkipError, StateError, FileError
 from ..ini_files import OBSEIniFile
 
-os_sep = unicode(os.path.sep) # PY3: already unicode
+os_sep = str(os.path.sep) # PY3: already unicode
 
 class Installer(ListInfo):
     """Object representing an installer archive, its user configuration, and
@@ -251,7 +251,7 @@ class Installer(ListInfo):
 
     @staticmethod
     def number_string(number, marker_string=u''):
-        return unicode(number)
+        return str(number)
 
     def size_string(self, marker_string=u''):
         return round_size(self.fsize)
@@ -967,7 +967,7 @@ class Installer(ListInfo):
         self.type = bain_type
         #--SubNames, SubActives
         if bain_type == 2:
-            self.subNames = sorted(subNameSet,key=unicode.lower)
+            self.subNames = sorted(subNameSet,key=str.lower)
             actives = {x for x, y in izip(self.subNames, self.subActives)
                        if (y or x == u'')}
             if len(self.subNames) == 2: #--If only one subinstall, then make it active.
@@ -1045,7 +1045,7 @@ class Installer(ListInfo):
         outFile = outDir.join(u'bash_temp_nonunicode_name.tmp')
         num = 0
         while outFile.exists():
-            outFile += unicode(num)
+            outFile += str(num)
             num += 1
         project = outDir.join(project)
         with project.unicodeSafe() as projectDir:

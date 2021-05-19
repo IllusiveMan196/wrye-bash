@@ -292,7 +292,7 @@ def vistaDialog(parent, message, title, checkBoxTxt=None,
     if checkBoxTxt:
         if isinstance(checkBoxTxt, bytes):
             raise RuntimeError(u'Do not pass bytes to vistaDialog!')
-        elif isinstance(checkBoxTxt, unicode):
+        elif isinstance(checkBoxTxt, str):
             dialog.set_check_box(checkBoxTxt,False)
         else:
             dialog.set_check_box(checkBoxTxt[0],checkBoxTxt[1])
@@ -532,7 +532,7 @@ class ListEditor(DialogWindow):
         #--GUI
         super(ListEditor, self).__init__(parent, title, sizes_dict=sizes)
         # PY3: Drop the unicode()
-        self._size_key = unicode(self._listEditorData.__class__.__name__)
+        self._size_key = str(self._listEditorData.__class__.__name__)
         #--List Box
         self.listBox = ListBox(self, choices=self._list_items)
         self.listBox.set_min_size(125, 150)

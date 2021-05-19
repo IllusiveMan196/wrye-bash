@@ -42,14 +42,14 @@ def _make_hashable(target_obj):
         return tuple([_make_hashable(x) for x in target_obj])
     return target_obj
 
-class FixedString(unicode):
+class FixedString(str):
     """An action for MelStructs that will decode and encode a fixed-length
     string. Note that you do not need to specify defaults when using this."""
     __slots__ = (u'str_length',)
     _str_encoding = bolt.pluginEncoding
 
     def __new__(cls, str_length, target_str=b''):
-        if isinstance(target_str, unicode):
+        if isinstance(target_str, str):
             decoded_str = target_str
         else:
             decoded_str = u'\n'.join(
@@ -62,7 +62,7 @@ class FixedString(unicode):
 
     def __call__(self, new_str):
         # 0 is the default, so replace it with whatever we currently have
-        return FixedString(self.str_length, new_str or unicode(self))
+        return FixedString(self.str_length, new_str or str(self))
 
     def dump(self):
         return bolt.encode_complex_string(self, max_size=self.str_length,

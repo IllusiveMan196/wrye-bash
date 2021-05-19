@@ -101,7 +101,7 @@ def _parse_plugins_txt_(path, mod_infos, _star):
                 # have a way to double check: modInfos.data
                 for encoding in bolt.encodingOrder:
                     try:
-                        test2 = unicode(modname, encoding)
+                        test2 = str(modname, encoding)
                         mod_gpath_2 = GPath_no_norm(test2)
                         if mod_gpath_2 in mod_infos:
                             mod_g_path = mod_gpath_2

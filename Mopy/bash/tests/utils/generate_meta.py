@@ -74,7 +74,7 @@ def generate_meta_cosave_xse(target_file):
         accurate_masters = (not bush.game.has_esl or
                             test_cosave.has_accurate_master_list())
         out.write(u'masters_are_accurate = %s\n' %
-                  unicode(accurate_masters).lower())
+                  str(accurate_masters).lower())
     ##: Once all are implemented, move to process_file
     print(u"Metadata successfully generated and written to '%s'" % (
             target_file + u'.meta'))
@@ -117,7 +117,7 @@ for e in (u'.obse', u'.fose', u'.nvse', u'.skse', u'.f4se'):
 
 if __name__ == u'__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument(u'target_file_or_folder', type=unicode,
+    parser.add_argument(u'target_file_or_folder', type=str,
                         help=u'the file to generate a .meta file for')
     parsed_args = parser.parse_args()
     target_file_or_folder = parsed_args.target_file_or_folder

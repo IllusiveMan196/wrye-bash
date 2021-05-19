@@ -153,7 +153,7 @@ class ConvertersData(DataDict):
 
     def addConverter(self, converter):
         """Links the new converter to installers"""
-        if isinstance(converter, (unicode, bytes)): ##: investigate
+        if isinstance(converter, (str, bytes)): ##: investigate
             #--Adding a new file
             converter = GPath(converter).tail
         if isinstance(converter, InstallerConverter):
@@ -403,7 +403,7 @@ class InstallerConverter(object):
                 self.convertedFiles):
             srcDir = srcDir_File[0]
             srcFile = srcDir_File[1]
-            if isinstance(srcDir, (Path, (unicode, bytes))): ##: investigate
+            if isinstance(srcDir, (Path, (str, bytes))): ##: investigate
                 #--either 'BCF-Missing', or crc read from 7z l -slt
                 srcDir = u'%s' % srcDir # Path defines __str__()
                 srcFile = tempJoin(srcDir, srcFile)

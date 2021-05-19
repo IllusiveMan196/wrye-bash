@@ -73,12 +73,12 @@ else:
         # Check for proper usage for the future Python 3:
         if isinstance(env_key, bytes):
             _warn(u'Environment variable keys should be unicode.')
-        elif isinstance(env_key, unicode):
+        elif isinstance(env_key, str):
             # Expected, but os.environ uses bytes
             env_key = env_key.encode(_fsencoding)
         if isinstance(env_value, bytes):
             _warn(u'Environment variable values should be unicode.')
-        elif isinstance(env_value, unicode):
+        elif isinstance(env_value, str):
             # Expceted, but os.environ uses bytes
             env_value = env_value.encode(_fsencoding)
         os.environ[env_key] = env_value
@@ -91,7 +91,7 @@ else:
            os.environ.get(key) -> get_env(key, None)
            os.environ.get(key, default) -> get_env(key, default)
         """
-        if isinstance(env_key, unicode):
+        if isinstance(env_key, str):
             # Expected, but os.environ uses bytes
             env_key = env_key.encode(_fsencoding)
         elif isinstance(env_key, bytes):

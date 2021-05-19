@@ -59,7 +59,7 @@ class PatchDialog(DialogWindow):
         super(PatchDialog, self).__init__(parent, title=title,
             icon_bundle=Resources.bashBlue, sizes_dict=balt.sizes,
             # PY3: drop the unicode()
-            size=balt.sizes.get(unicode(self.__class__.__name__), (500, 600)))
+            size=balt.sizes.get(str(self.__class__.__name__), (500, 600)))
         #--Data
         list_patches_dir() # refresh cached dir
         patchConfigs = patchInfo.get_table_prop(u'bash.patch.configs', {})
@@ -196,7 +196,7 @@ class PatchDialog(DialogWindow):
             log.setHeader(None)
             log(u'{{CSS:wtxt_sand_small.css}}')
             logValue = log.out.getvalue()
-            timerString = unicode(timedelta(seconds=round(timer2 - timer1, 3))).rstrip(u'0')
+            timerString = str(timedelta(seconds=round(timer2 - timer1, 3))).rstrip(u'0')
             logValue = re.sub(u'TIMEPLACEHOLDER', timerString, logValue, 1)
             readme = bosh.modInfos.store_dir.join(u'Docs', patch_name.sroot + u'.txt')
             docsDir = bass.dirs[u'mopy'].join(u'Docs')
@@ -238,7 +238,7 @@ class PatchDialog(DialogWindow):
                                                              doSave=True)
                     count = len(changedFiles)
                     if count > 1: Link.Frame.set_status_info(
-                            _(u'Masters Activated: ') + unicode(count - 1))
+                            _(u'Masters Activated: ') + str(count - 1))
                 except PluginsFullError:
                     balt.showError(self, _(
                         u'Unable to add mod %s because load list is full.')
