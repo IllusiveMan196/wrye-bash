@@ -63,34 +63,11 @@ def _key_sort(di, id_eid_=None, keys_dex=(), values_key=u'', by_value=False):
             yield k, di[k]
 
 #------------------------------------------------------------------------------
-class CsvParser(object):
+class TextParser(object):
     """Basic read/write csv functionality - ScriptText handles script files
     not csvs though."""
     _csv_header = ()
     _row_fmt_str = u''
-
-    def readFromText(self, csv_path):
-        """Reads information from the specified CSV file and stores the result
-        in id_stored_data. You must override _parse_line for this method to
-        work. ScriptText is a special case.
-
-        :param csv_path: The path to the CSV file that should be read."""
-        ##: drop utf-8-sig? backwards compat?
-        with GPath(csv_path).open(u'r',encoding=u'utf-8-sig')(csv_path) as ins:
-            first_line = ins.readline()
-            ##: drop 'excel-tab' format and delimiter = ';'? backwards compat?
-            excel_fmt = 'excel-tab' if '\t' in first_line else 'excel'
-            ins.seek(0)
-            if excel_fmt == 'excel':
-                delimiter = ';' if ';' in first_line else ','
-                reader = csv.reader(ins, excel_fmt, delimiter=delimiter)
-            else:
-                reader = csv.reader(ins, excel_fmt)
-            for fields in reader:
-                try:
-                    self._parse_line(fields)
-                except (IndexError, ValueError, TypeError):
-                    """TypeError/ValueError trying to unpack None/few values"""
 
     def _parse_line(self, csv_fields):
         """Parse the specified CSV line and update the parser's instance
@@ -162,6 +139,31 @@ class CsvParser(object):
         stored_data = stored_rec_info.get(rfid)
         if stored_data:
             self._write_record(record, stored_data, changed)
+
+class CsvParser(TextParser):
+
+    def readFromText(self, csv_path):
+        """Reads information from the specified CSV file and stores the result
+        in id_stored_data. You must override _parse_line for this method to
+        work. ScriptText is a special case.
+
+        :param csv_path: The path to the CSV file that should be read."""
+        ##: drop utf-8-sig? backwards compat?
+        with GPath(csv_path).open(u'r',encoding=u'utf-8-sig')(csv_path) as ins:
+            first_line = ins.readline()
+            ##: drop 'excel-tab' format and delimiter = ';'? backwards compat?
+            excel_fmt = 'excel-tab' if '\t' in first_line else 'excel'
+            ins.seek(0)
+            if excel_fmt == 'excel':
+                delimiter = ';' if ';' in first_line else ','
+                reader = csv.reader(ins, excel_fmt, delimiter=delimiter)
+            else:
+                reader = csv.reader(ins, excel_fmt)
+            for fields in reader:
+                try:
+                    self._parse_line(fields)
+                except (IndexError, ValueError, TypeError):
+                    """TypeError/ValueError trying to unpack None/few values"""
 
 class _HandleAliases(CsvParser):##: Py3 move to bolt after absorbing _CsvReader
     """WIP aliases handling."""
@@ -901,7 +903,7 @@ class ItemStats(_HandleAliases):
                 out.write(output)
 
 #------------------------------------------------------------------------------
-class ScriptText(CsvParser):
+class ScriptText(TextParser):
     #todo(ut): maybe standardize script line endings (read both write windows)?
     """import & export functions for script text."""
     _parser_sigs = [b'SCPT']
