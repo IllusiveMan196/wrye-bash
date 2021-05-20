@@ -152,13 +152,9 @@ class MultiChoicePopup(_TransientPopup):
     def _search_choices(self, search_str):
         """Internal callback for searching via the search bar."""
         search_lower = search_str.lower().strip()
-        choice_keys = []
-        choice_values = []
-        for k, v in self._all_choices:
-            if search_lower in k.lower():
-                choice_keys.append(k)
-                choice_values.append(v)
-        self._choice_box.set_all_items(choice_keys, choice_values)
+        choices_dict = {k: v for k, v in self._all_choices if
+                        search_lower in k.lower()}
+        self._choice_box.set_all_items(choices_dict)
 
     def _handle_item_checked(self, choice_index):
         """Internal callback for checking or unchecking an item, forwards to

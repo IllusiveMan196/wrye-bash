@@ -909,8 +909,8 @@ class ModInfo(FileInfo):
         *only* meant for strings files. It sorts the list in such a way as to
         prioritize files that are likely to contain the strings, instead of
         returning the true BSA order."""
-        ret_bsas = list(reversed(list( # PY3: drop second list
-            modInfos.get_bsa_lo(for_plugins=[self.ci_key])[0])))
+        ret_bsas = list(reversed(
+            modInfos.get_bsa_lo(for_plugins=[self.ci_key])[0]))
         # First heuristic sorting pass: sort 'main', 'patch' and 'interface' to
         # the front. This avoids parsing expensive BSAs at startup for the game
         # master (e.g. Skyrim.esm -> Skyrim - Textures0.bsa).
@@ -2810,11 +2810,8 @@ class ModInfos(FileInfos):
             return True
 
     def ini_files(self): ##: What about SkyrimCustom.ini etc?
-        # PY3: We can replace this with reversed() on 3.8+
-        iniFiles = list(self._plugin_inis.values()) # in active order
-        iniFiles.reverse() # later loading inis override previous settings
-        iniFiles.append(oblivionIni)
-        return iniFiles
+        # values in active order, later loading inis override previous settings
+        return [*reversed(self._plugin_inis.values()), oblivionIni]
 
     def create_new_mod(self, newName, selected=(), wanted_masters=None,
             directory=empty_path, bashed_patch=False, esm_flag=False,
