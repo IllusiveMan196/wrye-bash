@@ -50,11 +50,14 @@ def _key_sort(di, id_eid_=None, keys_dex=(), values_key=u'', by_value=False):
     if id_eid_ is not None: # we passed id_eid in sort by eid
         key_f=lambda k: id_eid_.get(k, u'unknown').lower()
         for k in sorted(di, key=key_f):
-            yield k, di[k], id_eid_[k]
+            yield k, (di[k], id_eid_[k])
     else:
         if keys_dex or values_key: # TODO(ut): drop below when keys are CIStr
-            key_f = lambda k: tuple((u'%s' % k[x]).lower() for x in keys_dex
-                        ) + (di[k][values_key].lower(),)
+            if isinstance(values_key, str):
+                values_key = [values_key] if values_key else []
+            key_f = lambda k: (*((u'%s' % k[x]).lower() for x in keys_dex),
+                               *(di[k][v].lower() if v == u'eid' else di[k][v]
+                                 for v in values_key))
         elif by_value:
             key_f = lambda k: di[k].lower()
         else:
@@ -135,6 +138,17 @@ class CsvParser(_TextParser):
     # Write csv functionality -------------------------------------------------
     def _header_row(self, out):
         out.write(u'"%s"\n' % u'","'.join(self._csv_header))
+
+    def _write_rows(self, out):
+        """Writes rows to csv text file."""
+        for top_grup_sig, id_data in _key_sort(self.id_stored_data):
+            if not id_data: continue
+            top_grup = top_grup_sig.decode(u'ascii')
+            for lfid, stored_data in _key_sort(id_data, **self._sort_args):
+                self._write_row(out, top_grup, lfid, stored_data)
+
+    def _write_row(self, out, top_grup, lfid, stored_data):
+        raise AbstractError(f'{type(self)} must implement _write_row')
 
     # Read csv functionality --------------------------------------------------
     def read_csv(self, csv_path):
@@ -431,6 +445,7 @@ class ActorFactions(_AParser):
         self._fp_types = (a_types + (b'FACT',) if not called_from_patcher
                           else ())
         self._sp_types = a_types
+        self._sort_args = dict(id_eid_=self.id_context)
 
     def _read_record_fp(self, record):
         return record.eid
@@ -472,15 +487,12 @@ class ActorFactions(_AParser):
         else:
             self.id_stored_data[top_grup_sig][aid][lfid] = rank
 
-    def _write_rows(self, out):
+    def _write_row(self, out, top_grup, aid, stored_data):
         """Exports faction data to specified text file."""
-        type_id_factions,id_eid = self.id_stored_data, self.id_context
-        for top_grup_sig, id_factions in _key_sort(type_id_factions):
-            top_grup = top_grup_sig.decode(u'ascii')
-            for aid, factions, actorEid in _key_sort(id_factions, id_eid):
-                for faction, rank, factionEid in _key_sort(factions, id_eid):
-                    out.write(self._row_fmt_str % (
-                        top_grup, actorEid, *aid, factionEid, *faction, rank))
+        factions, actorEid = stored_data
+        for faction, (rank, factionEid) in _key_sort(factions, **self._sort_args):
+            out.write(self._row_fmt_str % (
+                top_grup, actorEid, *aid, factionEid, *faction, rank))
 
 #------------------------------------------------------------------------------
 class ActorLevels(_HandleAliases):
@@ -592,6 +604,7 @@ class EditorIds(_HandleAliases):
         self.id_stored_data = defaultdict(dict) #--eid = eids[type][longid]
         self.old_new = {}
         self._parser_sigs = set(MreRecord.simpleTypes) - {b'CELL'}
+        self._sort_args = dict(by_value=True)
 
     def _read_record(self, record, id_data):
         if record.eid: id_data[record.fid] = record.eid
@@ -672,11 +685,8 @@ class EditorIds(_HandleAliases):
             self.questionableEidsSet.add(eid)
         return eid
 
-    def _write_rows(self, out):
-        for top_grup_sig, id_eid in _key_sort(self.id_stored_data):
-            top_grup = top_grup_sig.decode(u'ascii')
-            for id_, eid_ in _key_sort(id_eid, by_value=True):
-                out.write(self._row_fmt_str % (top_grup, *id_, eid_))
+    def _write_row(self, out, top_grup, longid, stored_data):
+        out.write(self._row_fmt_str % (top_grup, *longid, stored_data))
 
 #------------------------------------------------------------------------------
 class FactionRelations(_AParser):
@@ -691,6 +701,7 @@ class FactionRelations(_AParser):
         self._fp_types = (b'FACT',) if not self._called_from_patcher else ()
         self._sp_types = (b'FACT',)
         self._needs_fp_master_sort = True
+        self._sort_args = dict(id_eid_=self.id_context)
 
     def _read_record_fp(self, record):
         # Gather the latest value for the EID matching the FID
@@ -736,14 +747,13 @@ class FactionRelations(_AParser):
         oid = self._coerce_fid(omod, oobj)
         self.id_stored_data[b'FACT'][mid][oid] = tuple(csv_fields[6:])
 
-    def _write_rows(self, out):
+    def _write_row(self, out, top_grup, main_fid, stored_data):
         """Exports faction relations to specified text file."""
-        id_relations, id_eid = self.id_stored_data[b'FACT'], self.id_context
-        for main_fid, rel, main_eid in _key_sort(id_relations, id_eid_=id_eid):
-            for oth_fid, relation_obj, oth_eid in _key_sort(
-                    rel, id_eid_=id_eid):
-                out.write(self._row_fmt_str % (
-                    main_eid, *main_fid, oth_eid, *oth_fid, *relation_obj))
+        rel, main_eid = stored_data
+        for oth_fid, (relation_obj, oth_eid) in _key_sort(rel,
+                                                          **self._sort_args):
+            out.write(self._row_fmt_str % (
+                main_eid, *main_fid, oth_eid, *oth_fid, *relation_obj))
 
 #------------------------------------------------------------------------------
 class FidReplacer(_HandleAliases):
@@ -824,6 +834,7 @@ class FullNames(_HandleAliases):
         self._parser_sigs = bush.game.namesTypes
         self._attr_dex = {u'full': 4} if self._called_from_patcher else {
             u'eid': 3, u'full': 4}
+        self._sort_args = dict(keys_dex=[0], values_key=u'eid')
 
     def _read_record(self, record, id_data):
         full = record.full or (record.rec_sig == b'LIGH' and u'NO NAME')
@@ -838,14 +849,9 @@ class FullNames(_HandleAliases):
             record.setChanged()
             changed[di[u'eid']] = (full, newFull)
 
-    def _write_rows(self, out):
-        """Exports id_stored_data to specified text file."""
-        for top_grup_sig, id_name in _key_sort(self.id_stored_data):
-            top_grup = top_grup_sig.decode(u'ascii')
-            for longid, di in _key_sort(id_name, keys_dex=[0],
-                                        values_key=u'eid'):
-                out.write(self._row_fmt_str % (top_grup, *longid,
-                    di[u'eid'], di[u'full'].replace(u'"', u'""')))
+    def _write_row(self, out, top_grup, longid, stored_data):
+        out.write(self._row_fmt_str % (top_grup, *longid, stored_data[u'eid'],
+            stored_data[u'full'].replace(u'"', u'""')))
 
 #------------------------------------------------------------------------------
 class ItemStats(_HandleAliases):
@@ -1099,6 +1105,7 @@ class _UsesEffectsMixin(_HandleAliases):
         if u'effects' in atts:
             self._attr_serializer[u'effects'] = lambda val: self.writeEffects(
                 val)[1:] # chop off the first comma...
+        self._sort_args = dict(values_key=u'eid')
 
     def _parse_line(self, csv_fields):
         """Common code for Sigil/Ingredients."""
@@ -1228,13 +1235,10 @@ class _UsesEffectsMixin(_HandleAliases):
             changed.append(old_eid)
             record.setChanged()
 
-    def _write_rows(self, out):
-        """Exports stats to specified text file."""
-        stats, row_fmt_str = self.fid_stats, self._row_fmt_str
-        for rfid, fstats in _key_sort(stats, values_key=u'eid'): ##: , x[0]) ??
-            output = row_fmt_str % (*rfid, u','.join(
-                ser(fstats[k]) for k, ser in self._attr_serializer.items()))
-            out.write(output)
+    def _write_row(self, out, top_grup, rfid, fstats):
+        output = self._row_fmt_str % (*rfid, u','.join(
+            ser(fstats[k]) for k, ser in self._attr_serializer.items()))
+        out.write(output)
 
 #------------------------------------------------------------------------------
 class SigilStoneDetails(_UsesEffectsMixin):
@@ -1272,6 +1276,7 @@ class ItemPrices(_HandleAliases):
         super(ItemPrices, self).__init__(aliases_)
         self.id_stored_data = defaultdict(dict)
         self._parser_sigs = set(bush.game.pricesTypes)
+        self._sort_args = dict(values_key=[u'eid', u'value'])
 
     def _read_record(self, record, id_data):
         id_data[record.fid] = {a: getattr(record, a) for a in
@@ -1286,15 +1291,10 @@ class ItemPrices(_HandleAliases):
             changed[record.fid[0]] += 1
             record.setChanged()
 
-    def _write_rows(self, out, __getter=itemgetter(*_attr_dex)):
-        """Writes item prices to specified text file."""
-        for top_grup_sig, fid_stats in _key_sort(self.id_stored_data):
-            if not fid_stats: continue
-            top_grup = top_grup_sig.decode(u'ascii')
-            for lfid in sorted(fid_stats,key=lambda x:(
-                    fid_stats[x][u'eid'].lower(), fid_stats[x][u'value'])):
-                out.write(self._row_fmt_str % (
-                    *lfid, *__getter(fid_stats[lfid]), top_grup))
+    def _write_row(self, out, top_grup, lfid, stored_data,
+                   __getter=itemgetter(*_attr_dex)):
+        out.write(
+            self._row_fmt_str % (*lfid, *__getter(stored_data), top_grup))
 
 #------------------------------------------------------------------------------
 class SpellRecords(_UsesEffectsMixin):
