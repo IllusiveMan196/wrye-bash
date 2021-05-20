@@ -898,7 +898,7 @@ class ItemStats(_HandleAliases):
             if not fid_attr_value: continue
             atts = self.sig_stats_attrs[top_grup_sig]
             sers = [attr_csv_struct[x][2] for x in atts]
-            out.write(u'"%s"\n' % u'","'.join( # Py3: unpack
+            out.write(u'"%s"\n' % u'","'.join(
                 (_(u'Type'), _(u'Mod Name'), _(u'ObjectIndex'), *(
                     attr_csv_struct[a][1] for a in atts))))
             top_grup = top_grup_sig.decode(u'ascii')
