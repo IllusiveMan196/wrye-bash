@@ -44,41 +44,7 @@ from .brec import MreRecord, MelObject, genFid, RecHeader, null4, \
 from .exception import AbstractError
 from .mod_files import ModFile, LoadFactory
 
-# Utils ##: absorb in CsvParser
-class _CsvReader(object):
-    """For reading csv files. Handles comma, semicolon and tab separated (excel) formats.
-       CSV files must be encoded in UTF-8"""
-    @staticmethod
-    def utf_8_encoder(unicode_csv_data):
-        for line in unicode_csv_data:
-            yield line.encode(u'utf8')
-
-    def __init__(self,path): ##: Py3 Revisit - is Csv reader still bytes?  get rid of BOM?
-        self.ins = GPath(path).open(u'r', encoding=u'utf-8-sig')
-        first_line = self.ins.readline()
-        excel_fmt = b'excel-tab' if u'\t' in first_line else b'excel'
-        self.ins.seek(0)
-        if excel_fmt == b'excel':
-            # TypeError: "delimiter" must be string, not unicode
-            delimiter = b';' if b';' in first_line else b','
-            self.reader = csv.reader(_CsvReader.utf_8_encoder(self.ins),
-                                     excel_fmt, delimiter=delimiter)
-        else:
-            self.reader = csv.reader(_CsvReader.utf_8_encoder(self.ins),
-                                     excel_fmt)
-
-    def __enter__(self): return self
-    def __exit__(self, exc_type, exc_value, exc_traceback): self.close()
-
-    def __iter__(self):
-        for row in self.reader:
-            yield [str(x, u'utf8') for x in row]
-
-    def close(self):
-        self.reader = None
-        self.ins.close()
-
-#------------------------------------------------------------------------------
+# Utils
 def _key_sort(di, id_eid_=None, keys_dex=(), values_key=u'', by_value=False):
     """Adapted to current uses"""
     if id_eid_ is not None: # we passed id_eid in sort by eid
@@ -96,6 +62,7 @@ def _key_sort(di, id_eid_=None, keys_dex=(), values_key=u'', by_value=False):
         for k in sorted(di, key=key_f):
             yield k, di[k]
 
+#------------------------------------------------------------------------------
 class CsvParser(object):
     """Basic read/write csv functionality - ScriptText handles script files
     not csvs though."""
@@ -108,8 +75,18 @@ class CsvParser(object):
         work. ScriptText is a special case.
 
         :param csv_path: The path to the CSV file that should be read."""
-        with _CsvReader(csv_path) as ins:
-            for fields in ins:
+        ##: drop utf-8-sig? backwards compat?
+        with GPath(csv_path).open(u'r',encoding=u'utf-8-sig')(csv_path) as ins:
+            first_line = ins.readline()
+            ##: drop 'excel-tab' format and delimiter = ';'? backwards compat?
+            excel_fmt = 'excel-tab' if '\t' in first_line else 'excel'
+            ins.seek(0)
+            if excel_fmt == 'excel':
+                delimiter = ';' if ';' in first_line else ','
+                reader = csv.reader(ins, excel_fmt, delimiter=delimiter)
+            else:
+                reader = csv.reader(ins, excel_fmt)
+            for fields in reader:
                 try:
                     self._parse_line(fields)
                 except (IndexError, ValueError, TypeError):
