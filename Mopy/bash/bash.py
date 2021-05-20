@@ -228,9 +228,7 @@ def _bash_ini_parser(bash_ini_path):
         bash_ini_parser = ConfigParser()
         # bash.ini is always compatible with UTF-8 (Russian INI is UTF-8,
         # English INI is ASCII)
-        # PY3: use read(bash_ini_path, encoding='utf-8') instead
-        with io.open(bash_ini_path, u'r', encoding=u'utf-8') as bash_ini:
-            bash_ini_parser.readfp(bash_ini)
+        bash_ini_parser.read(bash_ini_path, encoding='utf-8')
     return bash_ini_parser
 
 # Main ------------------------------------------------------------------------

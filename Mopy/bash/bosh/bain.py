@@ -1440,16 +1440,17 @@ class InstallerArchive(Installer):
     @staticmethod
     def _list_package(apath, log):
         with apath.unicodeSafe() as tempArch:
-            filepath = [u''] # PY3: nonlocal
             list_text = []
+            filepath = u''
             def _parse_archive_line(key, value):
+                nonlocal filepath
                 if key == u'Path':
-                    filepath[0] = value
+                    filepath = value
                 elif key == u'Attributes':
                     list_text.append( # attributes may be empty
-                        (u'%s' % filepath[0], value and (u'D' in value)))
+                        (f'{filepath}', value and (u'D' in value)))
                 elif key == u'Method':
-                    filepath[0] = u''
+                    filepath = u''
             list_archive(tempArch, _parse_archive_line)
         list_text.sort()
         #--Output

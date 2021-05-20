@@ -263,13 +263,13 @@ class CheckListBox(ListBox, WithCharEvents):
         """Returns a list of string representations of all checked items."""
         return self._native_widget.GetCheckedStrings()
 
-    def set_all_items(self, all_keys, all_values): # PY3: dict (sorted!)
+    def set_all_items(self, keys_values):
         """Completely clears the list and repopulates it using the specified
         key and value lists. Much faster than set_all_items_keep_pos, but
         discards the current scroll position."""
         with self.pause_drawing():
             self.lb_clear()
-            for i, (k, v) in enumerate(zip(all_keys, all_values)):
+            for i, (k, v) in enumerate(keys_values.items()):
                 self.lb_append(k)
                 self.lb_check_at_index(i, v)
 
