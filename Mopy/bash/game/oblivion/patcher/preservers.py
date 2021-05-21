@@ -208,6 +208,7 @@ class MorphFactionsPatcher(_ExSpecialList):
     _csv_key = u'MFact'
     _config_key = u'MFactMarker'
     _read_sigs = (b'FACT',)
+    _id_indexes = (0, 1)
 
     def _pLog(self, log, changed):
         log.setHeader(u'= ' + self._patcher_name)
@@ -220,8 +221,7 @@ class MorphFactionsPatcher(_ExSpecialList):
         # type: # (list[unicode]) -> tuple[object] | None
         mod, objectIndex = csv_fields[0], csv_fields[1]
         morphName = csv_fields[4].strip()
-        if not morphName:
-            return None # caller unpacks -> TypeError (should not happen often)
+        if not morphName: return
         rankName = csv_fields[5].strip() or _(u'Member')
         self.id_info[self._coerce_fid(mod, objectIndex)] = morphName, rankName
 
