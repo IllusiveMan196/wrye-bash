@@ -91,7 +91,7 @@ class CoblCatalogsPatcher(Patcher, ExSpecial):
         for mgef in alt_names:
             alt_names[mgef] = re.sub(attr_or_skill, u'', alt_names[mgef])
         actorEffects = bush.game.generic_av_effects
-        actorNames = bush.game.actor_values
+        actorNames = bush.game.actor_values # FIXME use the record type here
         keep = self.patchFile.getKeeper()
         #--Book generator
         def getBook(objectId,eid,full,value,iconPath,modelPath,modb_p):

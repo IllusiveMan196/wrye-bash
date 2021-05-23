@@ -1095,22 +1095,6 @@ class _UsesEffectsMixin(_HandleAliases):
         _(u'Effect'),_(u'Name'),_(u'Magnitude'),_(u'Area'),_(u'Duration'),
         _(u'Range'),_(u'Actor Value'),_(u'SE Mod Name'),_(u'SE ObjectIndex'),
         _(u'SE school'),_(u'SE visual'),_(u'SE Is Hostile'),_(u'SE Name'))
-    recipientTypeNumber_Name = {None:u'NONE',0:u'Self',1:u'Touch',2:u'Target',}
-    recipientTypeName_Number = {y.lower(): x for x, y
-                                in recipientTypeNumber_Name.items()
-                                if x is not None}
-    actorValueNumber_Name = {x: y for x, y
-                             in enumerate(bush.game.actor_values)}
-    actorValueNumber_Name[None] = u'NONE'
-    actorValueName_Number = {y.lower(): x for x, y
-                             in actorValueNumber_Name.items()
-                             if x is not None}
-    schoolTypeNumber_Name = {None:u'NONE',0:u'Alteration',1:u'Conjuration',
-                             2:u'Destruction',3:u'Illusion',4:u'Mysticism',
-                             5:u'Restoration',}
-    schoolTypeName_Number = {y.lower(): x for x, y
-                             in schoolTypeNumber_Name.items()
-                             if x is not None}
     _row_fmt_str = u'"%s","0x%06X",%s\n'
     _key2_indexes = (0, 1)
 
@@ -1148,72 +1132,6 @@ class _UsesEffectsMixin(_HandleAliases):
     def _read_record(self, record, id_data, __attrgetters=attrgetter_cache):
         id_data[record.fid] = {att: __attrgetters[att](record) for att in
                                self._attr_serializer}
-
-    def readEffects(self, _effects, __packer=structs_cache[u'I'].pack):
-        schoolTypeName_Number = _UsesEffectsMixin.schoolTypeName_Number
-        recipientTypeName_Number = _UsesEffectsMixin.recipientTypeName_Number
-        actorValueName_Number = _UsesEffectsMixin.actorValueName_Number
-        effects = []
-        while len(_effects) >= 13:
-            _effect,_effects = _effects[1:13],_effects[13:]
-            eff_name,magnitude,area,duration,range_,actorvalue,semod,seobj,\
-            seschool,sevisual,seflags,sename = _effect
-            eff_name = str_or_none(eff_name) #OBME not supported
-            # (support requires adding a mod/objectid format to the
-            # csv, this assumes all MGEFCodes are raw)
-            magnitude, area, duration = [int_or_none(x) for x in
-                                         (magnitude, area, duration)]
-            range_ = str_or_none(range_)
-            if range_:
-                range_ = recipientTypeName_Number.get(range_.lower(),
-                                                      int_or_zero(range_))
-            actorvalue = str_or_none(actorvalue)
-            if actorvalue:
-                actorvalue = actorValueName_Number.get(actorvalue.lower(),
-                                                       int_or_zero(actorvalue))
-            if None in (eff_name,magnitude,area,duration,range_,actorvalue):
-                continue
-            rec_type = MreRecord.type_class[self._parser_sigs[0]]
-            eff = rec_type.getDefault(u'effects')
-            effects.append(eff)
-            eff.effect_sig = eff_name.encode(u'ascii')
-            eff.magnitude = magnitude
-            eff.area = area
-            eff.duration = duration
-            eff.recipient = range_
-            eff.actorValue = actorvalue
-            # script effect
-            semod = str_or_none(semod)
-            if semod is None or not seobj.startswith(u'0x'):
-                continue
-            seschool = str_or_none(seschool)
-            if seschool:
-                seschool = schoolTypeName_Number.get(seschool.lower(),
-                                                     int_or_zero(seschool))
-            seflags = int_or_none(seflags)
-            sename = str_or_none(sename)
-            if any(x is None for x in (seschool, seflags, sename)):
-                continue
-            eff.scriptEffect = se = rec_type.getDefault(
-                u'effects.scriptEffect')
-            se.full = sename
-            se.script_fid = self._coerce_fid(semod, seobj)
-            se.school = seschool
-            sevisuals = int_or_none(sevisual) #OBME not
-            # supported (support requires adding a mod/objectid format to
-            # the csv, this assumes visual MGEFCode is raw)
-            if sevisuals is None: # it was no int try to read unicode MGEF Code
-                sevisuals = str_or_none(sevisual)
-                if sevisuals == u'' or sevisuals is None:
-                    sevisuals = null4
-                else:
-                    sevisuals = sevisuals.encode(u'ascii')
-            else: # pack int to bytes
-                sevisuals = __packer(sevisuals)
-            sevisual = sevisuals
-            se.visual = sevisual
-            se.flags = seflags # FIXME this need to be a se_flags
-        return effects
 
     @staticmethod
     def writeEffects(effects):

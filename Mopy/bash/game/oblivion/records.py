@@ -389,10 +389,109 @@ class MelOwnershipTes4(brec.MelOwnership):
 
 #------------------------------------------------------------------------------
 ##: Could technically be reworked for non-Oblivion games, but is broken and
-# unused outside of Oblivion right now
+# unused outside of Oblivion right now - for actor values in particular see
+# FO3/FNV: https://geck.bethsoft.com/index.php?title=Actor_Value_Codes
+# TES5: https://en.uesp.net/wiki/Tes5Mod:Actor_Value_Indices
+actor_values = [
+    _(u'Strength'), #--00
+    _(u'Intelligence'),
+    _(u'Willpower'),
+    _(u'Agility'),
+    _(u'Speed'),
+    _(u'Endurance'),
+    _(u'Personality'),
+    _(u'Luck'),
+    _(u'Health'),
+    _(u'Magicka'),
+
+    _(u'Fatigue'), #--10
+    _(u'Encumbrance'),
+    _(u'Armorer'),
+    _(u'Athletics'),
+    _(u'Blade'),
+    _(u'Block'),
+    _(u'Blunt'),
+    _(u'Hand To Hand'),
+    _(u'Heavy Armor'),
+    _(u'Alchemy'),
+
+    _(u'Alteration'), #--20
+    _(u'Conjuration'),
+    _(u'Destruction'),
+    _(u'Illusion'),
+    _(u'Mysticism'),
+    _(u'Restoration'),
+    _(u'Acrobatics'),
+    _(u'Light Armor'),
+    _(u'Marksman'),
+    _(u'Mercantile'),
+
+    _(u'Security'), #--30
+    _(u'Sneak'),
+    _(u'Speechcraft'),
+    u'Aggression', # TODO(inf) Why do the translations stop here??
+    u'Confidence',
+    u'Energy',
+    u'Responsibility',
+    u'Bounty',
+    u'UNKNOWN 38',
+    u'UNKNOWN 39',
+
+    u'MagickaMultiplier', #--40
+    u'NightEyeBonus',
+    u'AttackBonus',
+    u'DefendBonus',
+    u'CastingPenalty',
+    u'Blindness',
+    u'Chameleon',
+    u'Invisibility',
+    u'Paralysis',
+    u'Silence',
+
+    u'Confusion', #--50
+    u'DetectItemRange',
+    u'SpellAbsorbChance',
+    u'SpellReflectChance',
+    u'SwimSpeedMultiplier',
+    u'WaterBreathing',
+    u'WaterWalking',
+    u'StuntedMagicka',
+    u'DetectLifeRange',
+    u'ReflectDamage',
+
+    u'Telekinesis', #--60
+    u'ResistFire',
+    u'ResistFrost',
+    u'ResistDisease',
+    u'ResistMagic',
+    u'ResistNormalWeapons',
+    u'ResistParalysis',
+    u'ResistPoison',
+    u'ResistShock',
+    u'Vampirism',
+
+    u'Darkness', #--70
+    u'ResistWaterDamage',
+]
+
 class MreHasEffects(object):
     """Mixin class for magic items."""
     __slots__ = []
+    recipientTypeNumber_Name = {None:u'NONE',0:u'Self',1:u'Touch',2:u'Target',}
+    recipientTypeName_Number = {y.lower(): x for x, y
+                                in recipientTypeNumber_Name.items()
+                                if x is not None}
+    actorValueNumber_Name = {x: y for x, y in enumerate(actor_values)}
+    actorValueNumber_Name[None] = u'NONE'
+    actorValueName_Number = {y.lower(): x for x, y
+                             in actorValueNumber_Name.items()
+                             if x is not None}
+    schoolTypeNumber_Name = {None:u'NONE',0:u'Alteration',1:u'Conjuration',
+                             2:u'Destruction',3:u'Illusion',4:u'Mysticism',
+                             5:u'Restoration',}
+    schoolTypeName_Number = {y.lower(): x for x, y
+                             in schoolTypeNumber_Name.items()
+                             if x is not None}
 
     def getEffects(self):
         """Returns a summary of effects. Useful for alchemical catalog."""
@@ -447,6 +546,71 @@ class MreHasEffects(object):
             if effect.duration > 1: buffWrite(u' %sd' % effect.duration)
             buffWrite(u'\n')
         return buff.getvalue()
+
+    @classmethod
+    def readEffects(cls, _effects, __packer=structs_cache[u'I'].pack):
+        schoolTypeName_Number = cls.schoolTypeName_Number
+        recipientTypeName_Number = cls.recipientTypeName_Number
+        actorValueName_Number = cls.actorValueName_Number
+        effects = []
+        while len(_effects) >= 13:
+            _effect,_effects = _effects[1:13],_effects[13:]
+            eff_name,magnitude,area,duration,range_,actorvalue,semod,seobj,\
+            seschool,sevisual,seflags,sename = _effect
+            eff_name = str_or_none(eff_name) #OBME not supported
+            # (support requires adding a mod/objectid format to the
+            # csv, this assumes all MGEFCodes are raw)
+            magnitude, area, duration = [int_or_none(x) for x in
+                                         (magnitude, area, duration)]
+            range_ = str_or_none(range_)
+            if range_:
+                range_ = recipientTypeName_Number.get(range_.lower(),
+                                                      int_or_zero(range_))
+            actorvalue = str_or_none(actorvalue)
+            if actorvalue:
+                actorvalue = actorValueName_Number.get(actorvalue.lower(),
+                                                       int_or_zero(actorvalue))
+            if None in (eff_name,magnitude,area,duration,range_,actorvalue):
+                continue
+            eff = cls.getDefault(u'effects')
+            effects.append(eff)
+            eff.effect_sig = eff_name.encode(u'ascii')
+            eff.magnitude = magnitude
+            eff.area = area
+            eff.duration = duration
+            eff.recipient = range_
+            eff.actorValue = actorvalue
+            # script effect
+            semod = str_or_none(semod)
+            if semod is None or not seobj.startswith(u'0x'):
+                continue
+            seschool = str_or_none(seschool)
+            if seschool:
+                seschool = schoolTypeName_Number.get(seschool.lower(),
+                                                     int_or_zero(seschool))
+            seflags = int_or_none(seflags)
+            sename = str_or_none(sename)
+            if any(x is None for x in (seschool, seflags, sename)):
+                continue
+            eff.scriptEffect = se = cls.getDefault(u'effects.scriptEffect')
+            se.full = sename
+            se.script_fid = self._coerce_fid(semod, seobj)
+            se.school = seschool
+            sevisuals = int_or_none(sevisual) #OBME not
+            # supported (support requires adding a mod/objectid format to
+            # the csv, this assumes visual MGEFCode is raw)
+            if sevisuals is None: # it was no int try to read unicode MGEF Code
+                sevisuals = str_or_none(sevisual)
+                if sevisuals == u'' or sevisuals is None:
+                    sevisuals = null4
+                else:
+                    sevisuals = sevisuals.encode(u'ascii')
+            else: # pack int to bytes
+                sevisuals = __packer(sevisuals)
+            sevisual = sevisuals
+            se.visual = sevisual
+            se.flags = seflags # FIXME this need to be a se_flags
+        return effects
 
 #------------------------------------------------------------------------------
 # Oblivion Records ------------------------------------------------------------
@@ -1861,7 +2025,7 @@ class MreSpel(MelRecord,MreHasEffects):
                             3   : u'LesserPower',
                             4   : u'Ability',
                             5   : u'Poison'}
-    spellTypeName_Number = {y.lower(): x for x, y in # if name is None it will
+    spellTypeName_Number = {y.lower(): x for x, y in
                             spellTypeNumber_Name.items() if x is not None}
     levelTypeNumber_Name = {None : u'NONE',
                             0    : u'Novice',
