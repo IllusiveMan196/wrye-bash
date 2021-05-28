@@ -25,8 +25,6 @@
 """This script generates taglist.yaml files in 'Mopy/taglists' game
 subdirectories using the LOOT masterlists."""
 
-
-
 import argparse
 import logging
 import os

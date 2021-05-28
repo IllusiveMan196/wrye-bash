@@ -29,8 +29,6 @@ import copy
 import io
 import re
 import traceback
-
-
 # Local
 from . import configIsCBash
 from .constants import settingDefaults

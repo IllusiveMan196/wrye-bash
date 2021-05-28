@@ -25,8 +25,6 @@ import os
 import subprocess
 import webbrowser
 from collections import defaultdict
-
-
 from . import BashStatusBar, tabInfo
 from .constants import colorInfo, settingDefaults
 from .. import balt, barb, bass, bolt, bosh, bush, env, exception

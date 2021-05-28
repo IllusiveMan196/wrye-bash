@@ -31,8 +31,6 @@ __author__ = u'Infernio'
 import binascii
 import io
 import string
-
-
 from ..bolt import decoder, encode, struct_unpack, unpack_string, \
     unpack_int, unpack_short, unpack_4s, unpack_byte, unpack_str16, \
     unpack_float, unpack_double, unpack_int_signed, unpack_str32, AFile, \

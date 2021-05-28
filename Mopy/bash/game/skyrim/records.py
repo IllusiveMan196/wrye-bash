@@ -21,11 +21,7 @@
 #
 # =============================================================================
 """This module contains the skyrim record classes."""
-
-
 from collections import OrderedDict
-
-
 from ... import brec, bolt, bush
 from ...bolt import Flags, struct_pack, structs_cache, unpack_str16
 from ...brec import MelRecord, MelObject, MelGroups, MelStruct, FID, \

@@ -59,8 +59,6 @@
 #  TokensToRPN
 #  ExecuteRPN
 #==================================================
-
-
 import operator
 from string import digits, whitespace
 

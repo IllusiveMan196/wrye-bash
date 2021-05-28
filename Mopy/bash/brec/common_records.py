@@ -24,8 +24,6 @@
 some commonly needed records."""
 
 
-
-
 from operator import attrgetter
 
 from .advanced_elements import FidNotNullDecider, AttrValDecider, MelArray, \

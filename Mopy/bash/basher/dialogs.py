@@ -22,7 +22,6 @@
 # =============================================================================
 from collections import OrderedDict
 
-
 from . import bEnableWizard, BashFrame
 from .constants import installercons
 from .. import bass, balt, bosh, bolt, bush, env, load_order

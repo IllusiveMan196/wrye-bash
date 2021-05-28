@@ -20,8 +20,6 @@
 #  https://github.com/wrye-bash
 #
 # =============================================================================
-
-
 import io
 from collections import defaultdict, OrderedDict
 

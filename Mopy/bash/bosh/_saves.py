@@ -24,8 +24,6 @@
 Oblivion only . We need this split into cosaves and proper saves module and
 coded for rest of the games."""
 # TODO: Oblivion only - we need to support rest of games - help needed
-
-
 import io
 from collections import Counter, defaultdict
 from itertools import starmap, repeat

@@ -22,14 +22,10 @@
 # =============================================================================
 """BAIN Converters aka BCFs"""
 
-
-
 import pickle
 import io
 import re
 import sys
-
-
 from .. import bolt, archives, bass
 from ..archives import defaultExt, readExts, compressionSettings, \
     compressCommand

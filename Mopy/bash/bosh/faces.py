@@ -23,8 +23,6 @@
 
 import io
 import re
-
-
 from . import SaveInfo
 from ._saves import SreNPC, SaveFile
 from .. import bush, bolt

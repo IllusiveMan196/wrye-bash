@@ -20,8 +20,6 @@
 #  https://github.com/wrye-bash
 #
 # =============================================================================
-
-
 import os
 import subprocess
 import webbrowser

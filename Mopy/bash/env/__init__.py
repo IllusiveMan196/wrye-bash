@@ -27,8 +27,6 @@ implementations for the current OS."""
 import errno
 import platform
 import shutil
-
-
 # First import the shared API
 from .common import *
 

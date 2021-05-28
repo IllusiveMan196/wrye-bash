@@ -23,8 +23,6 @@
 """This module contains oblivion multitweak item patcher classes that belong
 to the Settings Multitweaker - as well as the tweaker itself."""
 
-
-
 from .base import MultiTweakItem, MultiTweaker, CustomChoiceTweak
 from ... import bush  # for game
 

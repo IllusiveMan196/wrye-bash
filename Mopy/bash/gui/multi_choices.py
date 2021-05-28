@@ -25,8 +25,6 @@ through a list, a dropdown, or even a color picker."""
 
 __author__ = u'nycz, Utumno'
 
-
-
 import wx as _wx
 import wx.adv as _adv
 

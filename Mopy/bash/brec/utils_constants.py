@@ -23,8 +23,6 @@
 """Houses the parts of brec that didn't fit anywhere else or were needed by
 almost all other parts of brec."""
 
-
-
 from .. import bolt
 from ..bolt import cstrip, decoder, Flags, structs_cache, attrgetter_cache
 # no local imports, imported everywhere in brec

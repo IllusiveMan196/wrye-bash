@@ -1,8 +1,6 @@
 #!/usr/bin/env python2
 
 # setup.py used to compile the executable with py2exe
-
-
 import argparse
 import os
 import shutil

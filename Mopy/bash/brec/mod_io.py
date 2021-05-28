@@ -22,8 +22,6 @@
 # =============================================================================
 """Houses very low-level classes for reading and writing bytes in plugin
 files."""
-
-
 import os
 from io import BytesIO
 

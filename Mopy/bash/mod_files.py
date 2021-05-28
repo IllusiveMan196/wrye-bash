@@ -23,8 +23,6 @@
 """This module houses the entry point for reading and writing plugin files
 through PBash (LoadFactory + ModFile) as well as some related classes."""
 
-
-
 from collections import defaultdict
 from itertools import chain
 from zlib import decompress as zlib_decompress, error as zlib_error

@@ -26,8 +26,6 @@
 - rework encoding/decoding
 """
 
-
-
 __author__ = u'Utumno'
 
 import copy

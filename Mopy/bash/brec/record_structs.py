@@ -23,8 +23,6 @@
 """Houses abstract base classes and some APIs for representing records and
 subrecords in memory."""
 
-
-
 from collections import defaultdict
 import copy
 import io

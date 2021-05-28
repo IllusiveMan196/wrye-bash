@@ -23,8 +23,6 @@
 """Houses classes for reading, manipulating and writing groups of records."""
 
 # Python imports
-
-
 import io
 from collections import deque
 from itertools import chain

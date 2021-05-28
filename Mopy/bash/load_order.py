@@ -37,8 +37,6 @@ lo/active from inside Bash.
 delegate to the game_handle.
 """
 
-
-
 __author__ = u'Utumno'
 
 import sys

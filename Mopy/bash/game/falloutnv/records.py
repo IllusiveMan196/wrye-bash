@@ -21,8 +21,6 @@
 #
 # =============================================================================
 """This module contains the falloutnv record classes."""
-
-
 # Set MelModel in brec, in this case it's identical to the fallout 3 one
 from ..fallout3.records import MelDestructible, MelConditions
 from ...bolt import Flags, struct_calcsize

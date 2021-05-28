@@ -33,8 +33,6 @@ Creates three different types of distributables:
 
 Most steps of the build process can be customized, see the options below.
 """
-
-
 import argparse
 import datetime
 import glob

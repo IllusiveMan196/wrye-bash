@@ -33,8 +33,6 @@ https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguid
 https://github.com/microsoft/DirectXTex
 https://github.com/ModOrganizer2/modorganizer-preview_dds"""
 
-
-
 __author__ = u'Infernio'
 
 import copy

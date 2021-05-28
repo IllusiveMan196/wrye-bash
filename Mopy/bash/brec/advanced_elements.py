@@ -26,8 +26,6 @@ this file involve conditional loading and are much less commonly used. Relies
 on some of the elements defined in basic_elements, e.g. MelBase, MelObject and
 MelStruct."""
 
-
-
 __author__ = u'Infernio'
 
 import copy

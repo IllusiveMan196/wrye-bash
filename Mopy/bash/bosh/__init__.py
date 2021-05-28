@@ -27,8 +27,6 @@ stores. bush.game must be set, to properly instantiate the data stores."""
 
 # Imports ---------------------------------------------------------------------
 #--Python
-
-
 import pickle
 import collections
 import errno
@@ -2117,7 +2115,6 @@ class ModInfos(FileInfos):
         if unlock_lo:
             with load_order.Unlock(): _do_lo_refresh()
         else: _do_lo_refresh()
-
 
     @_lo_cache
     def cached_lo_save_active(self, active=None):

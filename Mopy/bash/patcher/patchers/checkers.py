@@ -24,8 +24,6 @@
 properties about records and either notifies the user or attempts a fix when it
 notices a problem."""
 
-
-
 import random
 import re
 from collections import defaultdict, Counter

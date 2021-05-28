@@ -23,13 +23,9 @@
 
 """Specific parser for Wrye Bash."""
 
-
-
 import os
 import traceback
 from collections import OrderedDict, defaultdict
-
-
 from . import ScriptParser  # generic parser class
 from . import bass, bolt, bosh, bush, load_order
 from .ScriptParser import error
