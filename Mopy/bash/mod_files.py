@@ -403,8 +403,8 @@ class ModFile(object):
                 try:
                     target_set.add(unpack_eid(reid.encode(u'ascii'))[0])
                 except struct_error:
-                    raise ModError(None, u'Failed to unpack EDID for '
-                                         u'%r' % record)
+                    raise ModError(None,
+                                   f'Failed to unpack EDID for {record!r}')
                 m_names[reid] = record.full or u'' # could this be None?
         self.cached_mgef_school = m_school
         self.cached_mgef_hostiles = m_hostiles - nonhostile_recs | hostile_recs
